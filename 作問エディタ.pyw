@@ -168,7 +168,7 @@ class Problem:
         self.想定解=想定解本文.get(0.0,'end -1c')
         self.生成機=ジェネレータコード.get(0.0,'end -1c')
     def output(self):
-        vars=[i[:i.index(':')]for i in self.必要変数.split(',')]
+        変数ズ=[i[:i.index(':')]for i in self.必要変数.split(',')]
         cases=[eval(f'[{i}]')for i in self.テストケース.split('\n')]
         outputs=self.出力.split('\n')
         #print('"'+self.必要変数.replace(':','":"').replace(',','","').replace(' ','')+'"')
@@ -176,7 +176,7 @@ class Problem:
         text+=formatt(self.制約)+'",\n  "question":"'+formatt(self.問題文)
         text+='",\n  "test_case":{\n    "variables":{\n'
         text+=',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    },\n    "case":[\n'
-        text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+vars[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])
+        text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])
         text+='\n    ]\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":'+strr(formatt(self.生成機))+'\n}'
         return text
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -210,12 +210,12 @@ def てすと(testcase,code):
     #print('caught:',testcase)
     text=code
     for i in testcase:text=text.replace(match(i+' ?= ?',text).group(),'',1)
-    vars=';'.join([i+'='+(str(testcase[i])if type(testcase[i])!=str else '"'+testcase[i].replace('"','\\"')+'"')for i in testcase])
+    変数ズ=';'.join([i+'='+(str(testcase[i])if type(testcase[i])!=str else '"'+testcase[i].replace('"','\\"')+'"')for i in testcase])
     a={}
     変数名=''.join(map(lambda x:chr(randint(97,122)),range(500)))
     with time_limit_with_thread(2):
         try:
-            exec(f'def print(*value,sep=" ",end="\\n",file="",flush=""):\n global {変数名}\n {変数名}+=sep.join(map(str,value))+end\n{変数名}="";'+vars+';'+text,a,{})
+            exec(f'def print(*value,sep=" ",end="\\n",file="",flush=""):\n global {変数名}\n {変数名}+=sep.join(map(str,value))+end\n{変数名}="";'+変数ズ+';'+text,a,{})
             return formatt(a[変数名][:-1])
         except:
             raise TimeoutError('コード実行時間が長すぎます')
