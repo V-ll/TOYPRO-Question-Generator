@@ -16,7 +16,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ11')
+window.title('V.ll式作問エディタβ11.2')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -95,7 +95,7 @@ jsonの枠=Frame(テストケース管理)
 jsonの枠.pack()
 json化ボタン=Button(jsonの枠,text='jsonに変換',font=fonts)
 json化ボタン.pack(fill=BOTH)
-jsonスペース=ScrolledText(jsonの枠,width=50,height=8)
+jsonスペース=ScrolledText(jsonの枠,width=50,height=8,wrap=NONE)
 jsonスペース.pack()
 #想定解をつくる
 想定解の枠=Frame(window)
