@@ -16,7 +16,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ12')
+window.title('V.ll式作問エディタβ12.1')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -302,11 +302,11 @@ def テストケース生成er(*e):
             raise Exception from e
     #print(a)
     if False not in[i[:i.index(':')] in a for i in 必要変数.get().split(',')]:
-        print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
+        #print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
         テストケース入力部.insert('end','\n'+','.join([strr(a[i[:i.index(':')]])for i in 必要変数.get().split(',')]))
     else:
         jsonスペース.delete(0.0,'end')
-        jsonスペース.insert(0.0,'変数の定義がきちんと行われていません\n定義された変数は'+str(list(a)))
+        jsonスペース.insert(0.0,'変数の定義がきちんと行われていません\n定義されていない変数は'+str([i[:i.index(':')]for i in 必要変数.get().split(',') if i[:i.index(':')] not in a]))
 #色変えるマン()
 #print(type(jsonスペース))
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
