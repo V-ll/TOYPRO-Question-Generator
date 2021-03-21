@@ -5,13 +5,18 @@ from tkinter.ttk import*
 from tkinter import*
 from re import*
 from random import randint
+from time import sleep,time
+import errno
+import contextlib
+import ctypes
+import threading
 import os
 strr=lambda x:f'"{x}"'if type(x)==str else str(x)
 formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ10')
+window.title('V.ll式作問エディタβ11')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -103,6 +108,29 @@ jsonスペース.pack()
 想定解から出力を求めるボタン.pack(fill=BOTH)
 #GUI部品作成ここまで＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 #クラス定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+#↓https://qiita.com/Jacomb/items/92503b11aef68ec4748a から引用したコードです
+class TimeoutException(IOError):
+    errno = errno.EINTR
+@contextlib.contextmanager
+def time_limit_with_thread(timeout_secs):
+    thread_id = ctypes.c_long(threading.get_ident())
+    def raise_exception():
+        modified_thread_state_nums = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, ctypes.py_object(TimeoutException))
+        if modified_thread_state_nums == 0:
+            raise ValueError('Invalid thread id. thread_id:{}'.format(thread_id))
+        elif modified_thread_state_nums > 1:
+            # 通常このパスを通ることはないが、念のため保留中のExceptionをクリアしておく
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
+            raise SystemError('PyThreadState_SetAsyncExc failure.')
+
+    timer = threading.Timer(timeout_secs, raise_exception)
+    timer.setDaemon(True)
+    timer.start()
+    try:
+        yield
+    finally:
+        timer.cancel()
+        timer.join()
 class Problem:
     "問題を管理するためのクラスです\njsonメソッドでdictにして出力とか考えてる。それをstrにするかもね?"
     def __init__(
@@ -149,7 +177,7 @@ class Problem:
         text+='",\n  "test_case":{\n    "variables":{\n'
         text+=',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    },\n    "case":[\n'
         text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+vars[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])
-        text+='\n    ]\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":'+strr(formatt(self.生成機))+'}'
+        text+='\n    ]\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":'+strr(formatt(self.生成機))+'\n}'
         return text
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 def 問題データを反映します(*e,data=Problem()):
@@ -185,8 +213,13 @@ def てすと(testcase,code):
     vars=';'.join([i+'='+(str(testcase[i])if type(testcase[i])!=str else '"'+testcase[i].replace('"','\\"')+'"')for i in testcase])
     a={}
     変数名=''.join(map(lambda x:chr(randint(97,122)),range(500)))
-    exec(f'def print(x="",sep=" ",end="\\n"):\n global {変数名}\n {変数名}+=sep.join(map(str,[x]))+end\n{変数名}="";'+vars+';'+text,a,{})
-    return formatt(a[変数名][:-1])
+    with time_limit_with_thread(2):
+        try:
+            exec(f'def print(*value,sep=" ",end="\\n",file="",flush=""):\n global {変数名}\n {変数名}+=sep.join(map(str,value))+end\n{変数名}="";'+vars+';'+text,a,{})
+            return formatt(a[変数名][:-1])
+        except:
+            raise TimeoutError('コード実行時間が長すぎます')
+    window.update()
 def テストケースから出力を得る(*e):
     テストケース出力部.delete(0.0,'end')
     try:
@@ -194,7 +227,7 @@ def テストケースから出力を得る(*e):
             てすと({k:eval('['+テストケース入力部.get(0.0,'end').split('\n')[l]+']')[j]for j,k in enumerate([i[:i.index(':')]
             for i in 必要変数.get().split(',')])},想定解本文.get(0.0,'end'))for l in range(テストケース入力部.get(0.0,'end').count('\n'))]))
     except Exception as e:
-        テストケース出力部.insert(0.0,'<<error>>\nテストケースに空行または\n無効なテストデータが\n存在する可能性があります\n'+str(e))
+        テストケース出力部.insert(0.0,f'実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
         raise Exception from e
 def いい感じマン(*e):
     try:
@@ -242,11 +275,16 @@ def 開いて反映する(*e):
             raise Exception from e
 def テストケース生成er(*e):
     a={}
-    try:exec(ジェネレータコード.get(0.0,'end -1c'),{},a)
-    except Exception as e:
-        jsonスペース.delete(0.0,'end')
-        jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
-        raise Exception from e
+    with time_limit_with_thread(2):
+        try:exec(ジェネレータコード.get(0.0,'end -1c'),{},a)
+        except TimeoutException as e:
+            jsonスペース.delete(0.0,'end')
+            jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:ソースコード実行時間が長すぎます')
+            raise Exception from e
+        except Exception as e:
+            jsonスペース.delete(0.0,'end')
+            jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
+            raise Exception from e
     #print(a)
     if False not in[i[:i.index(':')] in a for i in 必要変数.get().split(',')]:
         print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
