@@ -15,7 +15,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ14')
+window.title('V.ll式作問エディタβ14.1')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -272,13 +272,15 @@ def てすと(testcase,code):
             return formatt(a[変数名][:-1])
         except:
             raise TimeoutError('コード実行時間が長すぎます')
-    window.update()
 def テストケースから出力を得る(*e):
     テストケース出力部.delete(0.0,'end')
+    jsonスペース.delete(0.0,'end')
+    jsonスペース.insert(0.0,'出力します...')
     try:
-        テストケース出力部.insert(0.0,'\n'.join([
-            てすと({k:eval('['+テストケース入力部.get(0.0,'end').split('\n')[l]+']')[j]for j,k in enumerate([i[:i.index(':')]
-            for i in 必要変数.get().split(',')])},想定解本文.get(0.0,'end'))for l in range(テストケース入力部.get(0.0,'end').count('\n'))]))
+        for m,l in enumerate(テストケース入力部.get(0.0,'end -1c').split('\n')):
+            テストケース出力部.insert('end','\n'*(m>0)+てすと({k:eval('['+l+']')[j]for j,k in enumerate([i[:i.index(':')]for i in 必要変数.get().split(',')])},想定解本文.get(0.0,'end')))
+            window.update()
+        jsonスペース.insert('end','出力完了')
     except Exception as e:
         テストケース出力部.insert(0.0,f'実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
         raise Exception from e
@@ -339,11 +341,14 @@ def テストケース求めるer():
             else:raise ValueError('変数の定義がきちんと行われていません\n定義されていない変数は'+str([i[:i.index(':')]for i in 必要変数.get().split(',') if i[:i.index(':')] not in a]))
         except Exception as e:raise e
 def テストケース生成er(*e):
+    jsonスペース.delete(0.0,'end')
+    jsonスペース.insert(0.0,'作成します...')
     try:
         if not 生成個数.get().isnumeric():raise ValueError('生成回数が整数ではありません')
         for i in range(int(生成個数.get())):
             テストケース求めるer()
             window.update()
+        jsonスペース.insert('end','作成完了')
     except TimeoutException as e:
         jsonスペース.delete(0.0,'end')
         jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:ソースコード実行時間が長すぎます')
