@@ -15,7 +15,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ13.1')
+window.title('V.ll式作問エディタβ14')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -127,7 +127,14 @@ window.title('V.ll式作問エディタβ13.1')
 #厚切り枠
 jsonの枠=Frame(問題行2)
 jsonの枠.pack(side=LEFT)
-生成ボタン=Button(jsonの枠,text='ランダムテストケースを1つ生成',font=fonts)
+生成枠=Frame(jsonの枠)
+生成枠.pack(fill=BOTH)
+生成タグ=Label(生成枠,font=fonts,text="テストケース生成個数→")
+生成タグ.pack(side=LEFT)
+生成個数=Entry(生成枠,font=fonts,width=4)
+生成個数.pack(side=LEFT)
+生成個数.insert(0,'1')
+生成ボタン=Button(生成枠,text='テストケースを生成',font=fonts)
 生成ボタン.pack(fill=BOTH)
 想定解から出力を求めるボタン=Button(jsonの枠,text='プログラムから出力を生成',font=fonts)
 想定解から出力を求めるボタン.pack(fill=BOTH)
@@ -137,7 +144,7 @@ jsonスペース枠=Frame(jsonの枠)
 jsonスペース枠.pack()
 jsonタグ=Label(jsonスペース枠,text='jsonの出力↓',font=fonts)
 jsonタグ.pack(anchor=W)
-jsonスペース=ScrolledText(jsonスペース枠,width=50,height=18,wrap=NONE)
+jsonスペース=ScrolledText(jsonスペース枠,width=49,height=18,wrap=NONE)
 jsonスペース.pack()
 jsonxすくろぉる=Scrollbar(jsonスペース枠,orient=HORIZONTAL,command=jsonスペース.xview)
 jsonxすくろぉる.pack(fill='x')
@@ -214,7 +221,7 @@ class Problem:
         cases=[eval(f'[{i}]')for i in self.テストケース.split('\n')]
         outputs=self.出力.split('\n')
         #print('"'+self.必要変数.replace(':','":"').replace(',','","').replace(' ','')+'"')
-        text=f'''{{\n  "title":"{self.タイトル}",\n  "rating":{self.得点},\n  "tag":"{self.タグ}",\n  "user_id":"{self.ユーザー}"",\n  "restrict":"'''
+        text=f'''{{\n  "title":"{formatt(self.タイトル)}",\n  "rating":{self.得点},\n  "tag":"{formatt(self.タグ)}",\n  "user_id":"{formatt(self.ユーザー)}",\n  "restrict":"'''
         text+=formatt(self.制約)+'",\n  "question":"'+formatt(self.問題文)
         text+='",\n  "test_case":{\n    "variables":{\n'
         text+=',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    },\n    "cases":[\n'
@@ -321,25 +328,31 @@ def 開いて反映する(*e):
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,f'読み込み時にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
             raise Exception from e
-def テストケース生成er(*e):
-    a={}
+def テストケース求めるer():
     with time_limit_with_thread(2):
-        try:exec(ジェネレータコード.get(0.0,'end -1c'),{},a)
-        except TimeoutException as e:
-            jsonスペース.delete(0.0,'end')
-            jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:ソースコード実行時間が長すぎます')
-            raise Exception from e
-        except Exception as e:
-            jsonスペース.delete(0.0,'end')
-            jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
-            raise Exception from e
-    #print(a)
-    if False not in[i[:i.index(':')] in a for i in 必要変数.get().split(',')]:
-        #print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
-        テストケース入力部.insert('end','\n'+','.join([strr(a[i[:i.index(':')]])for i in 必要変数.get().split(',')]))
-    else:
+        try:
+            a={}
+            exec(ジェネレータコード.get(0.0,'end -1c'),{},a)
+            if False not in[i[:i.index(':')] in a for i in 必要変数.get().split(',')]:
+                #print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
+                テストケース入力部.insert('end','\n'+','.join([strr(a[i[:i.index(':')]])for i in 必要変数.get().split(',')]))
+            else:raise ValueError('変数の定義がきちんと行われていません\n定義されていない変数は'+str([i[:i.index(':')]for i in 必要変数.get().split(',') if i[:i.index(':')] not in a]))
+        except Exception as e:raise e
+def テストケース生成er(*e):
+    try:
+        if not 生成個数.get().isnumeric():raise ValueError('生成回数が整数ではありません')
+        for i in range(int(生成個数.get())):
+            テストケース求めるer()
+            window.update()
+    except TimeoutException as e:
         jsonスペース.delete(0.0,'end')
-        jsonスペース.insert(0.0,'変数の定義がきちんと行われていません\n定義されていない変数は'+str([i[:i.index(':')]for i in 必要変数.get().split(',') if i[:i.index(':')] not in a]))
+        jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:ソースコード実行時間が長すぎます')
+        raise Exception from e
+    except Exception as e:
+        jsonスペース.delete(0.0,'end')
+        jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
+        raise Exception from e
+    #print(a)
 #色変えるマン()
 #print(type(jsonスペース))
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
