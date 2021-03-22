@@ -16,7 +16,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ12.1')
+window.title('V.ll式作問エディタβ13')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -28,9 +28,15 @@ window.title('V.ll式作問エディタβ12.1')
 ダークボタン.pack(side=LEFT)
 開く=Button(問題総まとめ,text='ファイルから読み込む',font=fonts)
 開く.pack(side=LEFT)
+名前ラベル=Label(問題総まとめ,text="ユーザーID→",font=fonts)
+名前ラベル.pack(side=LEFT)
+名前=Entry(問題総まとめ,font=fonts)
+名前.pack()
 #print(テーマ.get())
+問題行1=Frame(window)
+問題行1.pack()
 #問題管理
-問題管理=Frame(window)
+問題管理=Frame(問題行1)
 問題管理.pack(side=LEFT,anchor=NW)
 問題ヘッダ=Frame(問題管理)
 問題ヘッダ.pack()
@@ -67,8 +73,30 @@ window.title('V.ll式作問エディタβ12.1')
 制約xすくろぉる=Scrollbar(問題管理,orient=HORIZONTAL,command=制約.xview)
 制約xすくろぉる.pack(fill='x')
 制約["xscrollcommand"]=制約xすくろぉる.set
+
+#想定解をつくる
+想定解の枠=Frame(問題行1)
+想定解の枠.pack(side=LEFT)
+想定解タグ=Label(想定解の枠,text='想定解↓',font=fonts)
+想定解タグ.pack(anchor=W)
+想定解本文=ScrolledText(想定解の枠,font=fonts,width=43,height=28)
+想定解本文.pack(fill=BOTH)
+
+#解説を書いてもらいます
+解説枠=Frame(問題行1)
+解説枠.pack(side=LEFT)
+解説タグ=Label(解説枠,font=fonts,text="解説文↓")
+解説タグ.pack(anchor=W)
+解説文=ScrolledText(解説枠,font=fonts,width=43,height=27)
+解説文.pack(fill=BOTH)
+解説文横=Scrollbar(解説枠,orient=HORIZONTAL,command=解説文.xview)
+解説文横.pack(fill='x')
+解説文["xscrollcommand"]=解説文横.set
+
+問題行2=Frame(window)
+問題行2.pack(anchor=W)
 #テストケース管理
-テストケース管理=Frame(window)
+テストケース管理=Frame(問題行2)
 テストケース管理.pack(side=LEFT,anchor=N)
 ケース=Frame(テストケース管理)
 ケース.pack()
@@ -76,7 +104,7 @@ window.title('V.ll式作問エディタβ12.1')
 ケース縦1.pack(side=LEFT)
 ケースラベル2=Label(ケース縦1,text='テストケース↓',font=fonts,justify='left')
 ケースラベル2.pack(anchor=W)
-テストケース入力部=ScrolledText(ケース縦1,font=fonts,width=10,height=5,wrap=NONE)
+テストケース入力部=ScrolledText(ケース縦1,font=fonts,width=30,height=20,wrap=NONE)
 テストケース入力部.pack(anchor=W)
 テスト入力横=Scrollbar(ケース縦1,orient=HORIZONTAL,command=テストケース入力部.xview)
 テスト入力横.pack(fill="x")
@@ -85,42 +113,36 @@ window.title('V.ll式作問エディタβ12.1')
 ケース縦2.pack(side=LEFT)
 ケースラベル3=Label(ケース縦2,text='対応する文字列↓',font=fonts)
 ケースラベル3.pack(anchor=W)
-テストケース出力部=ScrolledText(ケース縦2,font=fonts,width=30,height=5,wrap=NONE)
+テストケース出力部=ScrolledText(ケース縦2,font=fonts,width=30,height=20,wrap=NONE)
 テストケース出力部.pack(anchor=W)
 テスト出力横=Scrollbar(ケース縦2,orient=HORIZONTAL,command=テストケース出力部.xview)
 テスト出力横.pack(fill="x")
 テストケース出力部["xscrollcommand"]=テスト出力横.set
 #テストケース生成さん
-ジェネレータ枠=Frame(テストケース管理)
+ジェネレータ枠=Frame(ケース)
 ジェネレータ枠.pack()
 生成ラベル=Label(ジェネレータ枠,text='テストケース生成コード↓',font=fonts)
 生成ラベル.pack()
-ジェネレータコード=ScrolledText(ジェネレータ枠,width=43,height=11,font=fonts)
+ジェネレータコード=ScrolledText(ジェネレータ枠,width=43,height=21,font=fonts)
 ジェネレータコード.pack()
-生成ボタン=Button(ジェネレータ枠,text='ランダムテストケースを1つ生成',font=fonts)
-生成ボタン.pack(fill=BOTH)
 #厚切り枠
-jsonの枠=Frame(テストケース管理)
-jsonの枠.pack()
+jsonの枠=Frame(問題行2)
+jsonの枠.pack(side=LEFT)
+生成ボタン=Button(jsonの枠,text='ランダムテストケースを1つ生成',font=fonts)
+生成ボタン.pack(fill=BOTH)
+想定解から出力を求めるボタン=Button(jsonの枠,text='プログラムから出力を生成',font=fonts)
+想定解から出力を求めるボタン.pack(fill=BOTH)
 json化ボタン=Button(jsonの枠,text='jsonに変換',font=fonts)
 json化ボタン.pack(fill=BOTH)
 jsonスペース枠=Frame(jsonの枠)
 jsonスペース枠.pack()
-jsonスペース=ScrolledText(jsonスペース枠,width=50,height=8,wrap=NONE)
+jsonタグ=Label(jsonスペース枠,text='jsonの出力↓',font=fonts)
+jsonタグ.pack(anchor=W)
+jsonスペース=ScrolledText(jsonスペース枠,width=50,height=18,wrap=NONE)
 jsonスペース.pack()
 jsonxすくろぉる=Scrollbar(jsonスペース枠,orient=HORIZONTAL,command=jsonスペース.xview)
 jsonxすくろぉる.pack(fill='x')
 jsonスペース["xscrollcommand"]=jsonxすくろぉる.set
-
-#想定解をつくる
-想定解の枠=Frame(window)
-想定解の枠.pack()
-想定解タグ=Label(想定解の枠,text='想定解↓',font=fonts)
-想定解タグ.pack(anchor=W)
-想定解本文=ScrolledText(想定解の枠,font=fonts,width=43,height=28)
-想定解本文.pack(fill=BOTH)
-想定解から出力を求めるボタン=Button(想定解の枠,text='プログラムから出力を生成',font=fonts)
-想定解から出力を求めるボタン.pack(fill=BOTH)
 #GUI部品作成ここまで＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 #クラス定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 #↓https://qiita.com/Jacomb/items/92503b11aef68ec4748a から引用したコードです
@@ -153,17 +175,20 @@ class Problem:
         タイトル='累乗',
         得点=100,
         タグ="四則演算",
+        ユーザー="guest",
         問題文='A,Bが与えられる。\nAのB乗を求めよ。',
         必要変数='A:int,B:int',
         制約='1<=A and A<=10**3 and 1<=B and B<=10**3',
         テストケース="2,3\n3,2",
         出力="8\n9",
         想定解="A=B=1\nprint(A**B)",
-        生成機="from random import randint\nA=randint(1,1000)\nB=randint(1,1000)"
+        生成機="from random import randint\nA=randint(1,1000)\nB=randint(1,1000)",
+        解説="AのB乗はA**Bです。\nそれをprintするだけ!"
         ):
         self.タイトル=タイトル
         self.得点=得点
         self.タグ=タグ
+        self.ユーザー=ユーザー
         self.問題文=問題文
         self.必要変数=必要変数
         self.制約=制約
@@ -171,10 +196,12 @@ class Problem:
         self.出力=出力
         self.想定解=想定解
         self.生成機=生成機
+        self.解説=解説
     def 反映(self):
         self.タイトル=タイトル.get()
         self.得点=int(得点.get())
         self.タグ=タグ.get()
+        self.ユーザー=名前.get()
         self.問題文=問題文.get(0.0,'end -1c')
         self.必要変数=必要変数.get()
         self.制約=制約.get()
@@ -182,17 +209,18 @@ class Problem:
         self.出力=テストケース出力部.get(0.0,'end -1c')
         self.想定解=想定解本文.get(0.0,'end -1c')
         self.生成機=ジェネレータコード.get(0.0,'end -1c')
+        self.解説=解説文.get(0.0,'end -1c')
     def output(self):
         変数ズ=[i[:i.index(':')]for i in self.必要変数.split(',')]
         cases=[eval(f'[{i}]')for i in self.テストケース.split('\n')]
         outputs=self.出力.split('\n')
         #print('"'+self.必要変数.replace(':','":"').replace(',','","').replace(' ','')+'"')
-        text=f'''{{\n  "title":"{self.タイトル}",\n  "rating":{self.得点},\n  "tag":"{self.タグ}",\n  "restrict":"'''
+        text=f'''{{\n  "title":"{self.タイトル}",\n  "rating":{self.得点},\n  "tag":"{self.タグ}",\n  "user_id":"{self.ユーザー}"",\n  "restrict":"'''
         text+=formatt(self.制約)+'",\n  "question":"'+formatt(self.問題文)
         text+='",\n  "test_case":{\n    "variables":{\n'
-        text+=',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    },\n    "case":[\n'
+        text+=',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    },\n    "cases":[\n'
         text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])
-        text+='\n    ]\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":'+strr(formatt(self.生成機))+'\n}'
+        text+='\n    ]\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":"'+formatt(self.生成機)+'",\n  "comment":"'+formatt(self.解説)+'"\n}'
         return text
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 def 問題データを反映します(*e,data=Problem()):
@@ -202,6 +230,8 @@ def 問題データを反映します(*e,data=Problem()):
     得点.insert(0,data.得点)
     タグ.delete(0,'end')
     タグ.insert(0,data.タグ)
+    名前.delete(0,'end')
+    名前.insert(0,data.ユーザー)
     問題文.delete(0.0,'end')
     問題文.insert(0.0,data.問題文)
     必要変数.delete(0,'end')
@@ -216,6 +246,8 @@ def 問題データを反映します(*e,data=Problem()):
     テストケース出力部.insert(0.0,data.出力)
     ジェネレータコード.delete(0.0,'end')
     ジェネレータコード.insert(0.0,data.生成機)
+    解説文.delete(0.0,'end')
+    解説文.insert(0.0,data.解説)
 def 新しい問題を作成します(*e):
     問題データを反映します(data=Problem())
     return
@@ -275,13 +307,15 @@ def 開いて反映する(*e):
                 b["title"],
                 b["rating"],
                 b["tag"],
+                ""if"user_id"not in b else b["user_id"],
                 b["question"],
                 ','.join([f'{i}:{b["test_case"]["variables"][i]}'for i in b["test_case"]["variables"]]),
                 b["restrict"],
-                '\n'.join([','.join([str(j)if type(j)!=str else '"'+j.replace('"','\\"')+'"' for j in i["inputs"].values()]) for i in b["test_case"]["case"]]),
-                '\n'.join([str(i["output"]) for i in b["test_case"]["case"]]),
+                '\n'.join([','.join([str(j)if type(j)!=str else '"'+j.replace('"','\\"')+'"' for j in i["inputs"].values()]) for i in b["test_case"]["case"+'s'*("cases"in b["test_case"])]]),
+                '\n'.join([str(i["output"]) for i in b["test_case"]["case"+'s'*("cases"in b["test_case"])]]),
                 ""if "expected_answer"not in b else b["expected_answer"],
                 ""if "test_case_generator"not in b else b["test_case_generator"],
+                ""if"comment"not in b else b["comment"]
                 )
             問題データを反映します(data=current_problem)
         except Exception as e:
@@ -329,6 +363,6 @@ window.update()
 size=list(map(int,window.winfo_geometry().split('+')[0].split('x')))
 window.geometry(f'{size[0]+1}x{size[1]+1}')
 window.update()
-window.geometry(f'{size[0]}x{size[1]}')
+window.geometry(f"{size[0]}x{size[1]}+30+30")
 window.resizable(width=0,height=0)
 window.mainloop()
