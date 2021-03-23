@@ -2,7 +2,7 @@ from tkinter.scrolledtext import ScrolledText
 from tkinter.messagebox import askyesno
 from tkinter.filedialog import askopenfilename
 from tkinter import Tk,Frame,Entry,LEFT,RIGHT,BOTTOM,Radiobutton,Label,Text,Button,NW,W,StringVar,BOTH,Scrollbar,HORIZONTAL,N,NONE
-from re import match
+from re import search
 from random import randint
 from time import sleep,time
 import errno
@@ -15,7 +15,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ14.2')
+window.title('V.ll式作問エディタβ14.3')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -262,7 +262,7 @@ def てすと(testcase,code):
     #ぐろぉばる=""
     #print('caught:',testcase)
     text=code
-    for i in testcase:text=text.replace(match(i+' ?= ?',text).group(),'',1)
+    for i in testcase:text=text.replace(search(i+' ?= ?',text).group(),'',1)
     変数ズ=';'.join([i+'='+(str(testcase[i])if type(testcase[i])!=str else '"'+testcase[i].replace('"','\\"')+'"')for i in testcase])
     a={}
     変数名=''.join(map(lambda x:chr(randint(97,122)),range(500)))
