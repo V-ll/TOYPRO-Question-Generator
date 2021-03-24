@@ -15,7 +15,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ15.1')
+window.title('V.ll式作問エディタβ15.2')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -234,7 +234,8 @@ class Problem:
         return text
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 def 二つの配列ドッキング(a,b):
-    for i in range(min(len(a),len(b))):
+    if len(a)!=len(b):raise ValueError(f'次の二つは要素数が等しくありません\nその1: {a}\nその2: {b}')
+    for i in range(len(a)):
         yield (a[i],b[i])
 def 問題データを反映します(*e,data=Problem()):
     タイトル.delete(0,'end')
@@ -281,20 +282,27 @@ def てすと(testcase,code):
             raise TimeoutError('コード実行時間が長すぎます')
         except Exception as e:
             raise e
+def 必要変数の配列():
+    a=[]
+    for i in 必要変数.get().split(','):
+        if ':'not in i:raise ValueError('必要変数の列にコロンがありません\n対応するエラーの部分-> '+i)
+        a+=[i[:i.index(':')]]
+    return a
 def テストケースから出力を得る(*e):
     テストケース出力部.delete(0.0,'end')
     jsonスペース.delete(0.0,'end')
     jsonスペース.insert(0.0,'出力します...')
     try:
         t=time()
+        変数の個数=len(必要変数.get().split(','))
         for m,l in enumerate(テストケース入力部.get(0.0,'end -1c').split('\n')):
-            テストケース出力部.insert('end','\n'*(m>0)+てすと({k:eval('['+l+']')[j]for j,k in enumerate([i[:i.index(':')]for i in 必要変数.get().split(',')])},想定解本文.get(0.0,'end')))
+            テストケース出力部.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
             if time()-t>0.1:
                 window.update()
                 t=time()
         jsonスペース.insert('end','出力完了')
     except Exception as e:
-        テストケース出力部.insert(0.0,f'実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
+        テストケース出力部.insert(0.0,f'テストケースその{m+1}を実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
         raise Exception from e
 def いい感じマン(*e):
     try:
@@ -331,8 +339,8 @@ def 開いて反映する(*e):
                 b["question"],
                 ','.join([f'{i}:{b["test_case"]["variables"][i]}'for i in b["test_case"]["variables"]]),
                 b["restrict"],
-                '\n'.join([','.join([str(j)if type(j)!=str else '"'+j.replace('"','\\"')+'"' for j in i["inputs"].values()]) for i in b["test_case"]["case"+'s'*("cases"in b["test_case"])]]),
-                '\n'.join([str(i["output"]) for i in b["test_case"]["case"+'s'*("cases"in b["test_case"])]]),
+                '\n'.join([','.join([strr(j)for j in i["inputs"].values()]) for i in b["test_case"]["case"+'s'*("cases"in b["test_case"])]]),
+                '\n'.join([formatt(i["output"])for i in b["test_case"]["case"+'s'*("cases"in b["test_case"])]]),
                 ""if "expected_answer"not in b else b["expected_answer"],
                 ""if "test_case_generator"not in b else b["test_case_generator"],
                 ""if"comment"not in b else b["comment"]
@@ -373,10 +381,10 @@ def テストケース生成er(*e):
         jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
         raise Exception from e
     #print(a)
-def 変数と入出力例反映er(*e):
+def 変数と入出力例反映er(*e):#コンマがあるとエラーになるんだったよね。入力例と出力例どっちも改造する必要がありそうだ。
     try:
         text='\n\n\n### 制約\n```python\n'+制約.get()+"\n```\n### 必要な変数\n```\n"+'\n'.join([i[:i.index(':')]for i in 必要変数.get().split(',')])+'\n```\n### 入力例\n```python\n'
-        text+='\n'.join([f'{k} = {j}'for k,j in 二つの配列ドッキング([i[:i.index(':')]for i in 必要変数.get().split(',')],テストケース入力部.get(1.0,2.0).split(','))])+'```\n### 出力例\n```\n'
+        text+='\n'.join([f'{k} = {j}'for k,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{テストケース入力部.get(1.0,2.0)}]'))])+'```\n### 出力例\n```\n'
         text+=テストケース出力部.get(1.0,2.0).replace('\\n','\n')+'```'
         問題文.insert('end',text)
     except Exception as e:
