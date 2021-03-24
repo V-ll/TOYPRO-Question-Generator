@@ -15,7 +15,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ15')
+window.title('V.ll式作問エディタβ15.1')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -305,7 +305,7 @@ def いい感じマン(*e):
         if flag:
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,current_problem.output())
-            with open((current_problem.タイトル or'無題')+'.json','w')as f:f.write(jsonスペース.get(0.0,'end -1c'))
+            with open((current_problem.タイトル or'無題')+'.json','w',-1,'SJIS')as f:f.write(jsonスペース.get(0.0,'end -1c'))
     except Exception as e:
         jsonスペース.delete(0.0,'end')
         jsonスペース.insert(0.0,f'どこかは知らないけどエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
@@ -319,7 +319,7 @@ def 色変えるマン(*e,t=window):
 def 開いて反映する(*e):
     a=askopenfilename(filetypes=[("jsonファイル","*.json")],initialdir=os.path.abspath(os.path.dirname(__file__)))
     if a:
-        with open(a)as f:b=eval(f.read())
+        with open(a,'r',-1,'SJIS')as f:b=eval(f.read())
         #print(厚切りジェイソン)
         global current_problem
         try:
