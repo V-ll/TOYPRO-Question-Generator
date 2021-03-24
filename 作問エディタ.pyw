@@ -15,7 +15,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ14.3')
+window.title('V.ll式作問エディタβ15')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -136,7 +136,11 @@ jsonの枠.pack(side=LEFT)
 生成個数.insert(0,'1')
 生成ボタン=Button(生成枠,text='テストケースを生成',font=fonts)
 生成ボタン.pack(fill=BOTH)
-想定解から出力を求めるボタン=Button(jsonの枠,text='プログラムから出力を生成',font=fonts)
+生成枠2=Frame(jsonの枠)
+生成枠2.pack(fill=BOTH)
+色々反映ボタン=Button(生成枠2,text="変数と入出力例を反映",font=fonts)
+色々反映ボタン.pack(side=LEFT,fill=BOTH)
+想定解から出力を求めるボタン=Button(生成枠2,text='プログラムから出力を生成',font=fonts)
 想定解から出力を求めるボタン.pack(fill=BOTH)
 json化ボタン=Button(jsonの枠,text='jsonに変換',font=fonts)
 json化ボタン.pack(fill=BOTH)
@@ -229,6 +233,9 @@ class Problem:
         text+='\n    ]\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":"'+formatt(self.生成機)+'",\n  "comment":"'+formatt(self.解説)+'"\n}'
         return text
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+def 二つの配列ドッキング(a,b):
+    for i in range(min(len(a),len(b))):
+        yield (a[i],b[i])
 def 問題データを反映します(*e,data=Problem()):
     タイトル.delete(0,'end')
     タイトル.insert(0,data.タイトル)
@@ -263,23 +270,28 @@ def てすと(testcase,code):
     #print('caught:',testcase)
     text=code
     for i in testcase:text=text.replace(search(i+' ?= ?',text).group(),'',1)
-    変数ズ=';'.join([i+'='+(str(testcase[i])if type(testcase[i])!=str else '"'+testcase[i].replace('"','\\"')+'"')for i in testcase])
+    変数ズ=';'.join([i+'='+strr(testcase[i])for i in testcase])
     a={}
     変数名=''.join(map(lambda x:chr(randint(97,122)),range(500)))
     with time_limit_with_thread(2):
         try:
             exec(f'def print(*value,sep=" ",end="\\n",file="",flush=""):\n global {変数名}\n {変数名}+=sep.join(map(str,value))+end\n{変数名}="";'+変数ズ+';'+text,a,{})
             return formatt(a[変数名][:-1])
-        except:
+        except TimeoutException:
             raise TimeoutError('コード実行時間が長すぎます')
+        except Exception as e:
+            raise e
 def テストケースから出力を得る(*e):
     テストケース出力部.delete(0.0,'end')
     jsonスペース.delete(0.0,'end')
     jsonスペース.insert(0.0,'出力します...')
     try:
+        t=time()
         for m,l in enumerate(テストケース入力部.get(0.0,'end -1c').split('\n')):
             テストケース出力部.insert('end','\n'*(m>0)+てすと({k:eval('['+l+']')[j]for j,k in enumerate([i[:i.index(':')]for i in 必要変数.get().split(',')])},想定解本文.get(0.0,'end')))
-            window.update()
+            if time()-t>0.1:
+                window.update()
+                t=time()
         jsonスペース.insert('end','出力完了')
     except Exception as e:
         テストケース出力部.insert(0.0,f'実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
@@ -345,9 +357,12 @@ def テストケース生成er(*e):
     jsonスペース.insert(0.0,'作成します...')
     try:
         if not 生成個数.get().isnumeric():raise ValueError('生成回数が整数ではありません')
+        t=time()
         for i in range(int(生成個数.get())):
             テストケース求めるer()
-            window.update()
+            if time()-t>0.1:
+                window.update()
+                t=time()
         jsonスペース.insert('end','作成完了')
     except TimeoutException as e:
         jsonスペース.delete(0.0,'end')
@@ -358,6 +373,16 @@ def テストケース生成er(*e):
         jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
         raise Exception from e
     #print(a)
+def 変数と入出力例反映er(*e):
+    try:
+        text='\n\n\n### 制約\n```python\n'+制約.get()+"\n```\n### 必要な変数\n```\n"+'\n'.join([i[:i.index(':')]for i in 必要変数.get().split(',')])+'\n```\n### 入力例\n```python\n'
+        text+='\n'.join([f'{k} = {j}'for k,j in 二つの配列ドッキング([i[:i.index(':')]for i in 必要変数.get().split(',')],テストケース入力部.get(1.0,2.0).split(','))])+'```\n### 出力例\n```\n'
+        text+=テストケース出力部.get(1.0,2.0).replace('\\n','\n')+'```'
+        問題文.insert('end',text)
+    except Exception as e:
+        jsonスペース.delete(0.0,'end')
+        jsonスペース.insert(0.0,f'文章生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
+        raise Exception from e
 #色変えるマン()
 #print(type(jsonスペース))
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -366,6 +391,7 @@ json化ボタン["command"]=いい感じマン
 ライトボタン["command"]=ダークボタン["command"]=色変えるマン
 開く["command"]=開いて反映する
 生成ボタン["command"]=テストケース生成er
+色々反映ボタン["command"]=変数と入出力例反映er
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 current_problem=Problem()
 問題データを反映します()
