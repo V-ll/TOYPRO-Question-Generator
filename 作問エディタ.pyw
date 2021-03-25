@@ -15,7 +15,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ15.2')
+window.title('V.ll式作問エディタβ16')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -59,7 +59,7 @@ window.title('V.ll式作問エディタβ15.2')
 タグ.pack(anchor=W)
 問題ラベル=Label(問題管理,text='問題文↓',font=fonts)
 問題ラベル.pack(anchor=W)
-問題文=ScrolledText(問題管理,width=60,height=21,font=fonts)
+問題文=ScrolledText(問題管理,width=60,height=20,font=fonts)
 問題文.pack(fill=BOTH,expand=1)
 変数司令=Label(問題管理,text='必要な変数(A:int,B:strのような形で)↓',font=fonts)
 変数司令.pack(anchor=W)
@@ -78,7 +78,7 @@ window.title('V.ll式作問エディタβ15.2')
 想定解の枠.pack(side=LEFT)
 想定解タグ=Label(想定解の枠,text='想定解↓',font=fonts)
 想定解タグ.pack(anchor=W)
-想定解本文=ScrolledText(想定解の枠,font=fonts,width=43,height=28)
+想定解本文=ScrolledText(想定解の枠,font=fonts,width=43,height=27)
 想定解本文.pack(fill=BOTH)
 
 #解説を書いてもらいます
@@ -86,7 +86,7 @@ window.title('V.ll式作問エディタβ15.2')
 解説枠.pack(side=LEFT)
 解説タグ=Label(解説枠,font=fonts,text="解説文↓")
 解説タグ.pack(anchor=W)
-解説文=ScrolledText(解説枠,font=fonts,width=43,height=27)
+解説文=ScrolledText(解説枠,font=fonts,width=43,height=26)
 解説文.pack(fill=BOTH)
 解説文横=Scrollbar(解説枠,orient=HORIZONTAL,command=解説文.xview)
 解説文横.pack(fill='x')
@@ -103,26 +103,39 @@ window.title('V.ll式作問エディタβ15.2')
 ケース縦1.pack(side=LEFT)
 ケースラベル2=Label(ケース縦1,text='テストケース↓',font=fonts,justify='left')
 ケースラベル2.pack(anchor=W)
-テストケース入力部=ScrolledText(ケース縦1,font=fonts,width=30,height=20,wrap=NONE)
+テストケース入力部=ScrolledText(ケース縦1,font=fonts,width=30,height=10,wrap=NONE)
 テストケース入力部.pack(anchor=W)
 テスト入力横=Scrollbar(ケース縦1,orient=HORIZONTAL,command=テストケース入力部.xview)
 テスト入力横.pack(fill="x")
-テストケース入力部["xscrollcommand"]=テスト入力横.set
+ケースラベル4=Label(ケース縦1,text='コーナーケース↓',font=fonts,justify='left')
+ケースラベル4.pack(anchor=W)
+コーナーケース入力部=ScrolledText(ケース縦1,font=fonts,width=30,height=10,wrap=NONE)
+コーナーケース入力部.pack(anchor=W)
+コーナー入力横=Scrollbar(ケース縦1,orient=HORIZONTAL,command=コーナーケース入力部.xview)
+コーナー入力横.pack(fill="x")
+コーナーケース入力部["xscrollcommand"]=コーナー入力横.set
 ケース縦2=Frame(ケース)
 ケース縦2.pack(side=LEFT)
 ケースラベル3=Label(ケース縦2,text='対応する文字列↓',font=fonts)
 ケースラベル3.pack(anchor=W)
-テストケース出力部=ScrolledText(ケース縦2,font=fonts,width=30,height=20,wrap=NONE)
+テストケース出力部=ScrolledText(ケース縦2,font=fonts,width=30,height=10,wrap=NONE)
 テストケース出力部.pack(anchor=W)
 テスト出力横=Scrollbar(ケース縦2,orient=HORIZONTAL,command=テストケース出力部.xview)
 テスト出力横.pack(fill="x")
 テストケース出力部["xscrollcommand"]=テスト出力横.set
+ケースラベル5=Label(ケース縦2,text='対応する文字列↓',font=fonts)
+ケースラベル5.pack(anchor=W)
+コーナーケース出力部=ScrolledText(ケース縦2,font=fonts,width=30,height=10,wrap=NONE)
+コーナーケース出力部.pack(anchor=W)
+コーナー出力横=Scrollbar(ケース縦2,orient=HORIZONTAL,command=コーナーケース出力部.xview)
+コーナー出力横.pack(fill="x")
+コーナーケース出力部["xscrollcommand"]=コーナー出力横.set
 #テストケース生成さん
 ジェネレータ枠=Frame(ケース)
 ジェネレータ枠.pack()
 生成ラベル=Label(ジェネレータ枠,text='テストケース生成コード↓',font=fonts)
 生成ラベル.pack()
-ジェネレータコード=ScrolledText(ジェネレータ枠,width=43,height=21,font=fonts)
+ジェネレータコード=ScrolledText(ジェネレータ枠,width=43,height=23,font=fonts)
 ジェネレータコード.pack()
 #厚切り枠
 jsonの枠=Frame(問題行2)
@@ -148,7 +161,7 @@ jsonスペース枠=Frame(jsonの枠)
 jsonスペース枠.pack()
 jsonタグ=Label(jsonスペース枠,text='jsonの出力↓',font=fonts)
 jsonタグ.pack(anchor=W)
-jsonスペース=ScrolledText(jsonスペース枠,width=49,height=18,wrap=NONE)
+jsonスペース=ScrolledText(jsonスペース枠,width=49,height=19,wrap=NONE)
 jsonスペース.pack()
 jsonxすくろぉる=Scrollbar(jsonスペース枠,orient=HORIZONTAL,command=jsonスペース.xview)
 jsonxすくろぉる.pack(fill='x')
@@ -191,6 +204,8 @@ class Problem:
         制約='1<=A and A<=10**3 and 1<=B and B<=10**3',
         テストケース="2,3\n3,2",
         出力="8\n9",
+        コーナー入力="1,1",
+        コーナー出力="1",
         想定解="A=B=1\nprint(A**B)",
         生成機="from random import randint\nA=randint(1,1000)\nB=randint(1,1000)",
         解説="AのB乗はA**Bです。\nそれをprintするだけ!"
@@ -204,6 +219,8 @@ class Problem:
         self.制約=制約
         self.テストケース=テストケース
         self.出力=出力
+        self.コーナー入力=コーナー入力
+        self.コーナー出力=コーナー出力
         self.想定解=想定解
         self.生成機=生成機
         self.解説=解説
@@ -217,6 +234,8 @@ class Problem:
         self.制約=制約.get()
         self.テストケース=テストケース入力部.get(0.0,'end -1c')
         self.出力=テストケース出力部.get(0.0,'end -1c')
+        self.コーナー入力=コーナーケース入力部.get(0.0,'end-1c')
+        self.コーナー出力=コーナーケース出力部.get(0.0,'end-1c')
         self.想定解=想定解本文.get(0.0,'end -1c')
         self.生成機=ジェネレータコード.get(0.0,'end -1c')
         self.解説=解説文.get(0.0,'end -1c')
@@ -229,6 +248,10 @@ class Problem:
         text+=formatt(self.制約)+'",\n  "question":"'+formatt(self.問題文)
         text+='",\n  "test_case":{\n    "variables":{\n'
         text+=',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    },\n    "cases":[\n'
+        text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])
+        text+='\n    ],\n    "corner_cases":[\n'
+        cases=[eval(f'[{i}]')for i in self.コーナー入力.split('\n')]
+        outputs=self.コーナー出力.split('\n')
         text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])
         text+='\n    ]\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":"'+formatt(self.生成機)+'",\n  "comment":"'+formatt(self.解説)+'"\n}'
         return text
@@ -262,6 +285,10 @@ def 問題データを反映します(*e,data=Problem()):
     ジェネレータコード.insert(0.0,data.生成機)
     解説文.delete(0.0,'end')
     解説文.insert(0.0,data.解説)
+    コーナーケース入力部.delete(0.0,'end')
+    コーナーケース入力部.insert(0.0,data.コーナー入力)
+    コーナーケース出力部.delete(0.0,'end')
+    コーナーケース出力部.insert(0.0,data.コーナー出力)
 def 新しい問題を作成します(*e):
     問題データを反映します(data=Problem())
     return
@@ -290,19 +317,35 @@ def 必要変数の配列():
     return a
 def テストケースから出力を得る(*e):
     テストケース出力部.delete(0.0,'end')
+    コーナーケース出力部.delete(0.0,'end')
     jsonスペース.delete(0.0,'end')
     jsonスペース.insert(0.0,'出力します...')
     try:
-        t=time()
-        変数の個数=len(必要変数.get().split(','))
-        for m,l in enumerate(テストケース入力部.get(0.0,'end -1c').split('\n')):
-            テストケース出力部.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
-            if time()-t>0.1:
-                window.update()
-                t=time()
+        if テストケース入力部.get(0.0,'end -1c'):
+            t=time()
+            変数の個数=len(必要変数.get().split(','))
+            for m,l in enumerate(テストケース入力部.get(0.0,'end -1c').split('\n')):
+                テストケース出力部.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
+                if time()-t>0.1:
+                    window.update()
+                    t=time()
         jsonスペース.insert('end','出力完了')
     except Exception as e:
         テストケース出力部.insert(0.0,f'テストケースその{m+1}を実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
+        raise Exception from e
+    jsonスペース.insert('end','\nコーナーケースを出力します...')
+    try:
+        if コーナーケース入力部.get(0.0,'end -1c'):
+            t=time()
+            変数の個数=len(必要変数.get().split(','))
+            for m,l in enumerate(コーナーケース入力部.get(0.0,'end -1c').split('\n')):
+                コーナーケース出力部.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
+                if time()-t>0.1:
+                    window.update()
+                    t=time()
+        jsonスペース.insert('end','出力完了')
+    except Exception as e:
+        コーナーケース出力部.insert(0.0,f'コーナーケースその{m+1}を実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
         raise Exception from e
 def いい感じマン(*e):
     try:
@@ -341,6 +384,8 @@ def 開いて反映する(*e):
                 b["restrict"],
                 '\n'.join([','.join([strr(j)for j in i["inputs"].values()]) for i in b["test_case"]["case"+'s'*("cases"in b["test_case"])]]),
                 '\n'.join([formatt(i["output"])for i in b["test_case"]["case"+'s'*("cases"in b["test_case"])]]),
+                ""if"corner_cases"not in b["test_case"]else'\n'.join([','.join([strr(j)for j in i["inputs"].values()]) for i in b["test_case"]["corner_cases"]]),
+                ""if"corner_cases"not in b["test_case"]else'\n'.join([formatt(i["output"])for i in b["test_case"]["corner_cases"]]),
                 ""if "expected_answer"not in b else b["expected_answer"],
                 ""if "test_case_generator"not in b else b["test_case_generator"],
                 ""if"comment"not in b else b["comment"]
