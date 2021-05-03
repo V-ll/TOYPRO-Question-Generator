@@ -5,6 +5,7 @@ from tkinter import Tk,Frame,Entry,LEFT,RIGHT,BOTTOM,Radiobutton,Label,Text,Butt
 from re import search
 from random import randint
 from time import sleep,time
+import traceback
 import errno
 import contextlib
 import ctypes
@@ -15,7 +16,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ16.2')
+window.title('V.ll式作問エディタβ16.3')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -331,7 +332,10 @@ def テストケースから出力を得る(*e):
                     t=time()
         jsonスペース.insert('end','出力完了')
     except Exception as e:
-        テストケース出力部.insert(0.0,f'テストケースその{m+1}を実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
+        a=traceback.format_exc()
+        while search('File .*?, ',a):
+            a=a.replace(search('File .*?, ',a).group(),'')
+        テストケース出力部.insert(0.0,f'テストケースその{m+1}を実行中にエラーが発生したよ(ざっくり)\n{a}')
         raise Exception from e
     jsonスペース.insert('end','\nコーナーケースを出力します...')
     try:
@@ -356,10 +360,13 @@ def いい感じマン(*e):
         if flag:
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,current_problem.output())
-            with open((current_problem.タイトル or'無題')+'.json','w',-1,'SJIS')as f:f.write(jsonスペース.get(0.0,'end -1c'))
+            with open((current_problem.タイトル or'無題')+'.json','w',-1,'UTF-16')as f:f.write(jsonスペース.get(0.0,'end -1c'))
     except Exception as e:
         jsonスペース.delete(0.0,'end')
-        jsonスペース.insert(0.0,f'どこかは知らないけどエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
+        a=traceback.format_exc()
+        while search('File .*?, ',a):
+            a=a.replace(search('File .*?, ',a).group(),'')
+        jsonスペース.insert(0.0,f'どこかは知らないけどエラーが起こったよ(ざっくり)\n{a}')
         raise Exception from e
 def 色変えるマン(*e,t=window):
     #print(t)
@@ -370,7 +377,10 @@ def 色変えるマン(*e,t=window):
 def 開いて反映する(*e):
     a=askopenfilename(filetypes=[("jsonファイル","*.json")],initialdir=os.path.abspath(os.path.dirname(__file__)))
     if a:
-        with open(a,'r',-1,'SJIS')as f:b=eval(f.read())
+        try:
+            with open(a,'r',-1,'UTF-16')as f:b=eval(f.read())
+        except:
+            with open(a,'r',-1,'SJIS')as f:b=eval(f.read())
         #print(厚切りジェイソン)
         global current_problem
         try:
@@ -434,7 +444,10 @@ def 変数と入出力例反映er(*e):#コンマがあるとエラーになる�
         問題文.insert('end',text)
     except Exception as e:
         jsonスペース.delete(0.0,'end')
-        jsonスペース.insert(0.0,f'文章生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
+        a=traceback.format_exc()
+        while search('File .*?, ',a):
+            a=a.replace(search('File .*?, ',a).group(),'')
+        jsonスペース.insert(0.0,f'文章生成中にエラーが起こったよ(ざっくり)\n{a}')
         raise Exception from e
 #色変えるマン()
 #print(type(jsonスペース))
