@@ -16,7 +16,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 fonts=('',12)
 window=Tk()
-window.title('V.ll式作問エディタβ16.4')
+window.title('V.ll式作問エディタβ16.5')
 #問題総まとめ
 問題総まとめ=Frame(window)
 問題総まとめ.pack(anchor=NW)
@@ -439,7 +439,7 @@ def テストケース生成er(*e):
 def 変数と入出力例反映er(*e):#コンマがあるとエラーになるんだったよね。入力例と出力例どっちも改造する必要がありそうだ。
     try:
         text='\n\n\n### 制約\n```python\n'+制約.get()+"\n```\n### 必要な変数\n```\n"+'\n'.join([i[:i.index(':')]for i in 必要変数.get().split(',')])+'\n```\n### 入力例\n```python\n'
-        text+='\n'.join([f'{k} = {j}'for k,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{テストケース入力部.get(1.0,2.0)}]'))])+'```\n### 出力例\n```\n'
+        text+='\n'.join([f'{k} = {strr(j)}'for k,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{テストケース入力部.get(1.0,2.0)}]'))])+'\n```\n### 出力例\n```\n'
         text+=テストケース出力部.get(1.0,2.0).replace('\\n','\n')+'```'
         問題文.insert('end',text)
     except Exception as e:
