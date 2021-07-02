@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ17.0')
+    window.title('V.ll式作問エディタβ17.1')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -448,6 +448,7 @@ def 変数と入出力例反映er(*e):#コンマがあるとエラーになる�
     try:
         if not 反映個数.get().isdecimal():raise ValueError('反映個数が整数ではありません')
         if int(反映個数.get())>テストケース入力部.get(0.0,'end').count('\n'):raise ValueError('反映個数がランダムケース数の個数を超えています')
+        if テストケース入力部.get(0.0,'end').count('\n')!=テストケース出力部.get(0.0,'end').count('\n'):raise ValueError('ランダムケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで改善できる場合があります。')
         text='\n\n\n### 制約\n```python\n'+制約.get()+"\n```\n### 必要な変数\n```python\n"+'\n'.join([i[:i.index(':')]for i in 必要変数.get().split(',')])+'\n```'
         for i in range(1,int(反映個数.get())+1):
             text+=f'\n### 入力例{i}\n```python\n'
