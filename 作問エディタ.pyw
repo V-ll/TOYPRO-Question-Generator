@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ17.2')
+    window.title('V.ll式作問エディタβ17.3')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -388,13 +388,15 @@ def 色変えるマン(*e,t=window):
 def 開いて反映する(*e):
     a=askopenfilename(filetypes=[("jsonファイル","*.json")],initialdir=os.path.abspath(os.path.dirname(__file__)))
     if a:
-        try:
-            with open(a,'r',-1,'UTF-16')as f:b=eval(f.read())
-        except:
-            with open(a,'r',-1,'SJIS')as f:b=eval(f.read())
         #print(厚切りジェイソン)
         global current_problem
         try:
+            frag=1
+            for i in ['UTF-16','UTF-8','SJIS']:
+                try:
+                    with open(a,'r',-1,i)as f:b=eval(f.read());frag=0;break
+                except:pass
+            if frag:raise IOError('ファイルの読み込みに失敗しました')
             current_problem=Problem(
                 b["title"],
                 b["rating"],
