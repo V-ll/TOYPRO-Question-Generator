@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ17.6')
+    window.title('V.ll式作問エディタβ17.7')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -489,6 +489,7 @@ json化ボタン["command"]=いい感じマン
 開く["command"]=開いて反映する
 生成ボタン["command"]=テストケース生成er
 色々反映ボタン["command"]=変数と入出力例反映er
+window.bind('<Control-s>',いい感じマン)
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 current_problem=Problem()
 問題データを反映します()
