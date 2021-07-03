@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ17.4')
+    window.title('V.ll式作問エディタβ17.6')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -235,7 +235,7 @@ class Problem:
         self.解説=解説
     def 反映(self):
         self.タイトル=タイトル.get()
-        self.得点=int(得点.get())
+        self.得点=0 if 得点.get()==''else int(得点.get())
         self.タグ=タグ.get()
         self.ユーザー=名前.get()
         self.問題文=問題文.get(0.0,'end -1c')
@@ -249,21 +249,33 @@ class Problem:
         self.生成機=ジェネレータコード.get(0.0,'end -1c')
         self.解説=解説文.get(0.0,'end -1c')
     def output(self):
-        変数ズ=[i[:i.index(':')]for i in self.必要変数.split(',')]
-        cases=[eval(f'[{i}]')for i in self.テストケース.split('\n')]
-        outputs=self.出力.split('\n')
+        変数ズ=[]if self.必要変数==""else[i[:i.index(':')]for i in self.必要変数.split(',')]
         #print('"'+self.必要変数.replace(':','":"').replace(',','","').replace(' ','')+'"')
         text=f'''{{\n  "title":"{formatt(self.タイトル)}",\n  "rating":{self.得点},\n  "tag":"{formatt(self.タグ)}",\n  "user_id":"{formatt(self.ユーザー)}",\n  "restrict":"'''
         text+=formatt(self.制約)+'",\n  "question":"'+formatt(self.問題文)
-        text+='",\n  "test_case":{\n    "variables":{\n'
-        text+=',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    },\n    "cases":[\n'
-        text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])
-        text+='\n    ],\n    "corner_cases":['
+        text+='",\n  "test_case":{\n    "variables":{'
+        if 変数ズ:text+='\n'+',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    '
+        text+='},\n    "cases":['
+        if self.テストケース=="":cases=[];outputs=[]
+        else:
+            text+='\n'
+            cases=[eval(f'[{i}]')for i in self.テストケース.split('\n')]
+            if set(map(len,cases))!={len(変数ズ),}:
+                raise ValueError('テストケースの中に、入力の数が必要な変数の数と一致しないものがあります')
+            outputs=self.出力.split('\n')
+            if len(cases)!=len(outputs):
+                raise ValueError('ランダムケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで改善できる場合があります。')
+            text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])+'\n    '
+        text+='],\n    "corner_cases":['
         if self.コーナー出力=="":cases=[];outputs=[]
         else:
             text+='\n'
             cases=[eval(f'[{i}]')for i in self.コーナー入力.split('\n')]
+            if set(map(len,cases))!={len(変数ズ),}:
+                raise ValueError('テストケースの中に、入力の数が必要な変数の数と一致しないものがあります')
             outputs=self.コーナー出力.split('\n')
+            if len(cases)!=len(outputs):
+                raise ValueError('ランダムケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで改善できる場合があります。')
             text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])+'\n    '
         text+=']\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":"'+formatt(self.生成機)+'",\n  "comment":"'+formatt(self.解説)+'"\n}'
         return text
@@ -470,8 +482,6 @@ def 変数と入出力例反映er(*e):#コンマがあるとエラーになる�
             a=a.replace(search('File .*?, ',a).group(),'')
         jsonスペース.insert(0.0,f'文章生成中にエラーが起こったよ(ざっくり)\n{a}')
         raise Exception from e
-#色変えるマン()
-#print(type(jsonスペース))
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 想定解から出力を求めるボタン["command"]=テストケースから出力を得る
 json化ボタン["command"]=いい感じマン
@@ -483,16 +493,6 @@ json化ボタン["command"]=いい感じマン
 current_problem=Problem()
 問題データを反映します()
 色変えるマン()
-#print(current_problem.output())
-#新しい問題を作成します()
-#問題データを反映します()
-#print(Problem().output())
-#print(てすと({"A":3,"B":2},Problem().想定解),{k:Problem().テストケース.split('\n')[0].split(',')[j] for j,k in enumerate([i[:i.index(':')]for i in Problem().必要変数.split(',')])})
-#テストケースから出力を得る()
 window.update()
-size=list(map(int,window.winfo_geometry().split('+')[0].split('x')))
-window.geometry(f'{size[0]+1}x{size[1]+1}')
-window.update()
-window.geometry(f"{size[0]}x{size[1]}+30+30")
 window.resizable(width=0,height=0)
 window.mainloop()
