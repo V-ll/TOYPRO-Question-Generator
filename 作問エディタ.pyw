@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ17.7')
+    window.title('V.ll式作問エディタβ18.0')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -279,6 +279,13 @@ class Problem:
             text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])+'\n    '
         text+=']\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":"'+formatt(self.生成機)+'",\n  "comment":"'+formatt(self.解説)+'"\n}'
         return text
+    def __eq__(self,other):
+        if type(other)!=self.__class__:return False
+        for i in [j for j in dir(other)if j[0]!='_' and j not in['反映','output']]:
+            #print(eval(f'[self.{i},other.{i},i]'))
+            if eval(f'self.{i}!=other.{i}'):return False
+        return True
+    def __ne__(self,other):return not(self==other)
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 def 二つの配列ドッキング(a,b):
     if len(a)!=len(b):raise ValueError(f'次の二つは要素数が等しくありません\nその1: {a}\nその2: {b}')
@@ -384,6 +391,8 @@ def いい感じマン(*e):
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,current_problem.output())
             with open((current_problem.タイトル or'無題')+'.json','w',-1,'UTF-16')as f:f.write(jsonスペース.get(0.0,'end -1c'))
+            global prev
+            prev.反映()
     except Exception as e:
         jsonスペース.delete(0.0,'end')
         a=traceback.format_exc()
@@ -401,7 +410,7 @@ def 開いて反映する(*e):
     a=askopenfilename(filetypes=[("jsonファイル","*.json")],initialdir=os.path.abspath(os.path.dirname(__file__)))
     if a:
         #print(厚切りジェイソン)
-        global current_problem
+        global current_problem,prev
         try:
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,'ファイル読込中...')
@@ -428,6 +437,7 @@ def 開いて反映する(*e):
                 ""if"comment"not in b else b["comment"]
                 )
             問題データを反映します(data=current_problem)
+            prev.反映()
             jsonスペース.insert('end','完了')
         except Exception as e:
             jsonスペース.delete(0.0,'end')
@@ -482,6 +492,14 @@ def 変数と入出力例反映er(*e):#コンマがあるとエラーになる�
             a=a.replace(search('File .*?, ',a).group(),'')
         jsonスペース.insert(0.0,f'文章生成中にエラーが起こったよ(ざっくり)\n{a}')
         raise Exception from e
+def 保存するか確認するer(*e):
+    global current_problem,prev
+    current_problem.反映()
+    if prev!=current_problem:
+        if askyesno("保存?", "このファイルは変更されています。終了前に保存しますか?"):
+            いい感じマン()
+            if prev==current_problem:window.destroy()
+        else:window.destroy()
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 想定解から出力を求めるボタン["command"]=テストケースから出力を得る
 json化ボタン["command"]=いい感じマン
@@ -490,8 +508,10 @@ json化ボタン["command"]=いい感じマン
 生成ボタン["command"]=テストケース生成er
 色々反映ボタン["command"]=変数と入出力例反映er
 window.bind('<Control-s>',いい感じマン)
+window.protocol('WM_DELETE_WINDOW',保存するか確認するer)
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 current_problem=Problem()
+prev=Problem()
 問題データを反映します()
 色変えるマン()
 window.update()
