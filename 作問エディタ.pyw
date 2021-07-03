@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ17.3')
+    window.title('V.ll式作問エディタβ17.4')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -391,6 +391,8 @@ def 開いて反映する(*e):
         #print(厚切りジェイソン)
         global current_problem
         try:
+            jsonスペース.delete(0.0,'end')
+            jsonスペース.insert(0.0,'ファイル読込中...')
             frag=1
             for i in ['UTF-16','UTF-8','SJIS']:
                 try:
@@ -414,6 +416,7 @@ def 開いて反映する(*e):
                 ""if"comment"not in b else b["comment"]
                 )
             問題データを反映します(data=current_problem)
+            jsonスペース.insert('end','完了')
         except Exception as e:
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,f'読み込み時にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
