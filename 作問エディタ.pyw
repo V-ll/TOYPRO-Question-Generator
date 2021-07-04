@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ18.7')
+    window.title('V.ll式作問エディタβ18.8')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -234,11 +234,15 @@ class Problem:
         self.解説=解説文.get(0.0,'end -1c')
     def output(self):
         変数ズ=[]if self.必要変数==""else[i[:i.index(':')]for i in self.必要変数.split(',')]
-        return json.dumps({'title':self.タイトル,'rating':self.得点,'tag':self.タグ,'restrict':self.制約,'question':self.問題文,'test_case':{'variables':eval('{'+','.join(['"'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'}'),'cases':シン支援('ランダム',self.テストケース,self.出力,変数ズ),'corner_cases':シン支援('コーナー',self.コーナー入力,self.コーナー出力,変数ズ)},'expected_answer':self.想定解,'test_case_generator':self.生成機,'comment':self.解説},indent=2,ensure_ascii=False)
+        return json.dumps(
+            {'title':self.タイトル,'rating':self.得点,'tag':self.タグ,'restrict':self.制約,'question':self.問題文,
+                'test_case':{
+                    'variables':eval('{'+','.join(['"'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'}'),
+                    'cases':シン支援('ランダム',self.テストケース,self.出力,変数ズ),'corner_cases':シン支援('コーナー',self.コーナー入力,self.コーナー出力,変数ズ)},
+                'expected_answer':self.想定解,'test_case_generator':self.生成機,'comment':self.解説},indent=2,ensure_ascii=False)
     def __eq__(self,other):
         if type(other)!=self.__class__:return False
         for i in [j for j in dir(other)if j[0]!='_' and j not in['反映','output']]:
-            #print(eval(f'[self.{i},other.{i},i]'))
             if eval(f'self.{i}!=other.{i}'):return False
         return True
     def __ne__(self,other):return not(self==other)
