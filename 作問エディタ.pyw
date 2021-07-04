@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ18.1')
+    window.title('V.ll式作問エディタβ18.2')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -207,7 +207,7 @@ class Problem:
         タイトル='累乗',
         得点=100,
         タグ="四則演算",
-        ユーザー="guest",
+        名前="guest",
         問題文='A,Bが与えられる。\nAのB乗を求めよ。',
         必要変数='A:int,B:int',
         制約='1<=A and A<=10**3 and 1<=B and B<=10**3',
@@ -219,23 +219,10 @@ class Problem:
         生成機="from random import randint\nA=randint(1,1000)\nB=randint(1,1000)",
         解説="AのB乗はA**Bです。\nそれをprintするだけ!"
         ):
-        self.タイトル=タイトル
-        self.得点=得点
-        self.タグ=タグ
-        self.名前=ユーザー
-        self.問題文=問題文
-        self.必要変数=必要変数
-        self.制約=制約
-        self.テストケース=テストケース
-        self.出力=出力
-        self.コーナー入力=コーナー入力
-        self.コーナー出力=コーナー出力
-        self.想定解=想定解
-        self.生成機=生成機
-        self.解説=解説
+        for i in['タイトル','得点','タグ','名前','問題文','必要変数','制約','テストケース','出力','コーナー入力','コーナー出力','想定解','生成機','解説']:exec(f'self.{i}={i}')
     def 反映(self):
         self.タイトル=タイトル.get()
-        self.得点=0 if 得点.get()==''else int(得点.get())
+        self.得点=100 if 得点.get()==''else int(得点.get())
         self.タグ=タグ.get()
         self.名前=名前.get()
         self.問題文=問題文.get(0.0,'end -1c')
@@ -287,9 +274,8 @@ class Problem:
         return True
     def __ne__(self,other):return not(self==other)
 class ErrorMessage:
-    def __init__(self,text):
-        self.text=text
-    def __enter__(self):return None
+    def __init__(self,text):self.text=text
+    def __enter__(self):pass
     def __exit__(self,*args):
         if args[0]is not None:
             a=traceback.format_exc()
