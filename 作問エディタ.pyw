@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ18.0')
+    window.title('V.ll式作問エディタβ18.1')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -222,7 +222,7 @@ class Problem:
         self.タイトル=タイトル
         self.得点=得点
         self.タグ=タグ
-        self.ユーザー=ユーザー
+        self.名前=ユーザー
         self.問題文=問題文
         self.必要変数=必要変数
         self.制約=制約
@@ -237,7 +237,7 @@ class Problem:
         self.タイトル=タイトル.get()
         self.得点=0 if 得点.get()==''else int(得点.get())
         self.タグ=タグ.get()
-        self.ユーザー=名前.get()
+        self.名前=名前.get()
         self.問題文=問題文.get(0.0,'end -1c')
         self.必要変数=必要変数.get()
         self.制約=制約.get()
@@ -251,7 +251,7 @@ class Problem:
     def output(self):
         変数ズ=[]if self.必要変数==""else[i[:i.index(':')]for i in self.必要変数.split(',')]
         #print('"'+self.必要変数.replace(':','":"').replace(',','","').replace(' ','')+'"')
-        text=f'''{{\n  "title":"{formatt(self.タイトル)}",\n  "rating":{self.得点},\n  "tag":"{formatt(self.タグ)}",\n  "user_id":"{formatt(self.ユーザー)}",\n  "restrict":"'''
+        text=f'''{{\n  "title":"{formatt(self.タイトル)}",\n  "rating":{self.得点},\n  "tag":"{formatt(self.タグ)}",\n  "user_id":"{formatt(self.名前)}",\n  "restrict":"'''
         text+=formatt(self.制約)+'",\n  "question":"'+formatt(self.問題文)
         text+='",\n  "test_case":{\n    "variables":{'
         if 変数ズ:text+='\n'+',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    '
@@ -286,40 +286,24 @@ class Problem:
             if eval(f'self.{i}!=other.{i}'):return False
         return True
     def __ne__(self,other):return not(self==other)
+class ErrorMessage:
+    def __init__(self,text):
+        self.text=text
+    def __enter__(self):return None
+    def __exit__(self,*args):
+        if args[0]is not None:
+            a=traceback.format_exc()
+            while search('File .*?, ',a):a=a.replace(search('File .*?, ',a).group(),'')
+            jsonスペース.delete(0.0,'end')
+            jsonスペース.insert(0.0,self.text+f'({args[0].__name__})\n\n{args[1]}\n\n{a}')
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 def 二つの配列ドッキング(a,b):
     if len(a)!=len(b):raise ValueError(f'次の二つは要素数が等しくありません\nその1: {a}\nその2: {b}')
     for i in range(len(a)):
         yield (a[i],b[i])
 def 問題データを反映します(*e,data=Problem()):
-    タイトル.delete(0,'end')
-    タイトル.insert(0,data.タイトル)
-    得点.delete(0,'end')
-    得点.insert(0,data.得点)
-    タグ.delete(0,'end')
-    タグ.insert(0,data.タグ)
-    名前.delete(0,'end')
-    名前.insert(0,data.ユーザー)
-    問題文.delete(0.0,'end')
-    問題文.insert(0.0,data.問題文)
-    必要変数.delete(0,'end')
-    必要変数.insert(0,data.必要変数)
-    制約.delete(0,'end')
-    制約.insert(0,data.制約)
-    想定解本文.delete(0.0,'end')
-    想定解本文.insert(0.0,data.想定解)
-    テストケース入力部.delete(0.0,'end')
-    テストケース入力部.insert(0.0,data.テストケース)
-    テストケース出力部.delete(0.0,'end')
-    テストケース出力部.insert(0.0,data.出力)
-    ジェネレータコード.delete(0.0,'end')
-    ジェネレータコード.insert(0.0,data.生成機)
-    解説文.delete(0.0,'end')
-    解説文.insert(0.0,data.解説)
-    コーナーケース入力部.delete(0.0,'end')
-    コーナーケース入力部.insert(0.0,data.コーナー入力)
-    コーナーケース出力部.delete(0.0,'end')
-    コーナーケース出力部.insert(0.0,data.コーナー出力)
+    for i in['タイトル','得点','タグ','名前','必要変数','制約']:exec(f'{i}.delete(0,"end");{i}.insert(0,data.{i})')
+    for i in[[問題文,data.問題文],[想定解本文,data.想定解],[テストケース入力部,data.テストケース],[テストケース出力部,data.出力],[ジェネレータコード,data.生成機],[解説文,data.解説],[コーナーケース入力部,data.コーナー入力],[コーナーケース出力部,data.コーナー出力]]:i[0].delete(0.0,'end');i[0].insert(0.0,i[1])
 def 新しい問題を作成します(*e):
     問題データを反映します(data=Problem())
     return
@@ -351,38 +335,29 @@ def テストケースから出力を得る(*e):
     コーナーケース出力部.delete(0.0,'end')
     jsonスペース.delete(0.0,'end')
     jsonスペース.insert(0.0,'ランダムケースを出力します...')
-    try:
-        if テストケース入力部.get(0.0,'end -1c'):
-            t=time()
-            変数の個数=len(必要変数.get().split(','))
-            for m,l in enumerate(テストケース入力部.get(0.0,'end -1c').split('\n')):
+    if テストケース入力部.get(0.0,'end -1c'):
+        t=time()
+        変数の個数=len(必要変数.get().split(','))
+        for m,l in enumerate(テストケース入力部.get(0.0,'end -1c').split('\n')):
+            with ErrorMessage(f'ランダムケースその{m+1}を実行中に\nエラーが発生したよ'):
                 テストケース出力部.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
-                if time()-t>0.1:
-                    window.update()
-                    t=time()
-        jsonスペース.insert('end','出力完了')
-    except Exception as e:
-        a=traceback.format_exc()
-        while search('File .*?, ',a):
-            a=a.replace(search('File .*?, ',a).group(),'')
-        テストケース出力部.insert(0.0,f'テストケースその{m+1}を実行中にエラーが発生したよ(ざっくり)\n{a}')
-        raise Exception from e
+            if time()-t>0.1:
+                window.update()
+                t=time()
+    jsonスペース.insert('end','出力完了')
     jsonスペース.insert('end','\nコーナーケースを出力します...')
-    try:
-        if コーナーケース入力部.get(0.0,'end -1c'):
-            t=time()
-            変数の個数=len(必要変数.get().split(','))
-            for m,l in enumerate(コーナーケース入力部.get(0.0,'end -1c').split('\n')):
+    if コーナーケース入力部.get(0.0,'end -1c'):
+        t=time()
+        変数の個数=len(必要変数.get().split(','))
+        for m,l in enumerate(コーナーケース入力部.get(0.0,'end -1c').split('\n')):
+            with ErrorMessage(f'コーナーケースその{m+1}を実行中に\nエラーが発生したよ'):
                 コーナーケース出力部.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
-                if time()-t>0.1:
-                    window.update()
-                    t=time()
-        jsonスペース.insert('end','出力完了')
-    except Exception as e:
-        コーナーケース出力部.insert(0.0,f'コーナーケースその{m+1}を実行中にエラーが発生したよ(ざっくり)\n{e.__class__.__name__}:{e}')
-        raise Exception from e
+            if time()-t>0.1:
+                window.update()
+                t=time()
+    jsonスペース.insert('end','出力完了')
 def いい感じマン(*e):
-    try:
+    with ErrorMessage('どこかは知らないけどエラーが起こったよ'):
         global current_problem
         current_problem.反映()
         flag=not os.path.exists((current_problem.タイトル or'無題')+'.json')
@@ -393,13 +368,6 @@ def いい感じマン(*e):
             with open((current_problem.タイトル or'無題')+'.json','w',-1,'UTF-16')as f:f.write(jsonスペース.get(0.0,'end -1c'))
             global prev
             prev.反映()
-    except Exception as e:
-        jsonスペース.delete(0.0,'end')
-        a=traceback.format_exc()
-        while search('File .*?, ',a):
-            a=a.replace(search('File .*?, ',a).group(),'')
-        jsonスペース.insert(0.0,f'どこかは知らないけどエラーが起こったよ(ざっくり)\n{a}')
-        raise Exception from e
 def 色変えるマン(*e,t=window):
     #print(t)
     if t.children!={}:
@@ -411,7 +379,7 @@ def 開いて反映する(*e):
     if a:
         #print(厚切りジェイソン)
         global current_problem,prev
-        try:
+        with ErrorMessage('読み込み時にエラーが起こったよ'):
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,'ファイル読込中...')
             frag=1
@@ -439,10 +407,6 @@ def 開いて反映する(*e):
             問題データを反映します(data=current_problem)
             prev.反映()
             jsonスペース.insert('end','完了')
-        except Exception as e:
-            jsonスペース.delete(0.0,'end')
-            jsonスペース.insert(0.0,f'読み込み時にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
-            raise Exception from e
 def テストケース求めるer():
     with time_limit_with_thread(2):
         try:
@@ -452,11 +416,12 @@ def テストケース求めるer():
                 #print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
                 テストケース入力部.insert('end','\n'+','.join([strr(a[i[:i.index(':')]])for i in 必要変数.get().split(',')]))
             else:raise ValueError('変数の定義がきちんと行われていません\n定義されていない変数は'+str([i[:i.index(':')]for i in 必要変数.get().split(',') if i[:i.index(':')] not in a]))
+        except TimeoutException as e:raise TimeoutError('ソースコード実行時間が長すぎます')
         except Exception as e:raise e
 def テストケース生成er(*e):
     jsonスペース.delete(0.0,'end')
     jsonスペース.insert(0.0,'作成します...')
-    try:
+    with ErrorMessage('テストケース生成中にエラーが起こったよ'):
         if not 生成個数.get().isdecimal():raise ValueError('生成回数が整数ではありません')
         t=time()
         for i in range(int(生成個数.get())):
@@ -465,33 +430,18 @@ def テストケース生成er(*e):
                 window.update()
                 t=time()
         jsonスペース.insert('end','作成完了')
-    except TimeoutException as e:
-        jsonスペース.delete(0.0,'end')
-        jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:ソースコード実行時間が長すぎます')
-        raise Exception from e
-    except Exception as e:
-        jsonスペース.delete(0.0,'end')
-        jsonスペース.insert(0.0,f'テストケース生成中にエラーが起こったよ(ざっくり)\n{e.__class__.__name__}:{e}')
-        raise Exception from e
     #print(a)
 def 変数と入出力例反映er(*e):#コンマがあるとエラーになるんだったよね。入力例と出力例どっちも改造する必要がありそうだ。
-    try:
+    with ErrorMessage('文章生成中にエラーが起こったよ'):
         if not 反映個数.get().isdecimal():raise ValueError('反映個数が整数ではありません')
         if int(反映個数.get())>テストケース入力部.get(0.0,'end').count('\n'):raise ValueError('反映個数がランダムケース数の個数を超えています')
-        if テストケース入力部.get(0.0,'end').count('\n')!=テストケース出力部.get(0.0,'end').count('\n'):raise ValueError('ランダムケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで改善できる場合があります。')
+        if テストケース入力部.get(0.0,'end').count('\n')!=テストケース出力部.get(0.0,'end').count('\n'):raise ValueError('ランダムケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで\n改善できる場合があります。')
         text='\n\n\n### 制約\n```python\n'+制約.get()+"\n```\n### 必要な変数\n```python\n"+'\n'.join([i[:i.index(':')]for i in 必要変数.get().split(',')])+'\n```'
         for i in range(1,int(反映個数.get())+1):
             text+=f'\n### 入力例{i}\n```python\n'
             text+='\n'.join([f'{k} = {strr(j)}'for k,j in 二つの配列ドッキング(必要変数の配列(),eval('['+テストケース入力部.get(f"{i}.0",f"{i+1}.0")+']'))])+f'\n```\n### 出力例{i}\n```\n'
             text+=テストケース出力部.get(f"{i}.0",f"{i+1}.0").replace('\\n','\n')+'```'
         問題文.insert('end',text)
-    except Exception as e:
-        jsonスペース.delete(0.0,'end')
-        a=traceback.format_exc()
-        while search('File .*?, ',a):
-            a=a.replace(search('File .*?, ',a).group(),'')
-        jsonスペース.insert(0.0,f'文章生成中にエラーが起こったよ(ざっくり)\n{a}')
-        raise Exception from e
 def 保存するか確認するer(*e):
     global current_problem,prev
     current_problem.反映()
@@ -500,6 +450,7 @@ def 保存するか確認するer(*e):
             いい感じマン()
             if prev==current_problem:window.destroy()
         else:window.destroy()
+    else:window.destroy()
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 想定解から出力を求めるボタン["command"]=テストケースから出力を得る
 json化ボタン["command"]=いい感じマン
@@ -514,6 +465,6 @@ current_problem=Problem()
 prev=Problem()
 問題データを反映します()
 色変えるマン()
-window.update()
+#window.update()
 window.resizable(width=0,height=0)
 window.mainloop()
