@@ -5,19 +5,14 @@ from tkinter import Tk,Frame,Entry,LEFT,RIGHT,BOTTOM,Radiobutton,Label,Text,Butt
 from re import search
 from random import randint
 from time import sleep,time
-import traceback
-import errno
-import contextlib
-import ctypes
-import threading
-import os
+import traceback,errno,contextlib,ctypes,threading,os,json
 strr=lambda x:f'"{x}"'if type(x)==str else str(x)
 formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ18.6')
+    window.title('V.ll式作問エディタβ18.7')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -239,16 +234,7 @@ class Problem:
         self.解説=解説文.get(0.0,'end -1c')
     def output(self):
         変数ズ=[]if self.必要変数==""else[i[:i.index(':')]for i in self.必要変数.split(',')]
-        #print('"'+self.必要変数.replace(':','":"').replace(',','","').replace(' ','')+'"')
-        text=f'''{{\n  "title":"{formatt(self.タイトル)}",\n  "rating":{self.得点},\n  "tag":"{formatt(self.タグ)}",\n  "user_id":"{formatt(self.名前)}",\n  "restrict":"'''
-        text+=formatt(self.制約)+'",\n  "question":"'+formatt(self.問題文)
-        text+='",\n  "test_case":{\n    "variables":{'
-        if 変数ズ:text+='\n'+',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    '
-        text+='}'
-        text+=テストケース出力支援('','ランダム',self.テストケース,self.出力,変数ズ)
-        text+=テストケース出力支援('corner_','コーナー',self.コーナー入力,self.コーナー出力,変数ズ)
-        text+='\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":"'+formatt(self.生成機)+'",\n  "comment":"'+formatt(self.解説)+'"\n}'
-        return text
+        return json.dumps({'title':self.タイトル,'rating':self.得点,'tag':self.タグ,'restrict':self.制約,'question':self.問題文,'test_case':{'variables':eval('{'+','.join(['"'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'}'),'cases':シン支援('ランダム',self.テストケース,self.出力,変数ズ),'corner_cases':シン支援('コーナー',self.コーナー入力,self.コーナー出力,変数ズ)},'expected_answer':self.想定解,'test_case_generator':self.生成機,'comment':self.解説},indent=2,ensure_ascii=False)
     def __eq__(self,other):
         if type(other)!=self.__class__:return False
         for i in [j for j in dir(other)if j[0]!='_' and j not in['反映','output']]:
@@ -266,11 +252,9 @@ class ErrorMessage:
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,self.text+f'({args[0].__name__})\n\n{str(args[1])or"(エラーメッセージなし)"}\n\n{a}')
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-def テストケース出力支援(name,message,inputs,outputs,変数ズ):
-    text=f',\n    "{name}cases":['
-    if inputs=="":cases=[];outputs=[]
+def シン支援(message,inputs,outputs,変数ズ):
+    if inputs=="":return[]
     else:
-        text+='\n'
         cases=[eval(f'[{i}]')for i in inputs.split('\n')]
         if set(map(len,cases))!={len(変数ズ),}:
             text=[f'テストケース{i+1}'for i in range(len(cases))if len(cases[i])!=len(変数ズ)]
@@ -278,8 +262,7 @@ def テストケース出力支援(name,message,inputs,outputs,変数ズ):
         outputs=outputs.split('\n')
         if len(cases)!=len(outputs):
             raise ValueError(message+'ケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで\n改善できる場合があります。')
-        text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])+'\n    '
-    return text+']'
+        return [{'inputs':{変数ズ[j]:cases[i][j]for j in range(len(cases[i]))},'output':outputs[i]}for i in range(len(outputs))]
 def 二つの配列ドッキング(a,b):
     if len(a)!=len(b):raise ValueError(f'次の二つは要素数が等しくありません\nその1: {a}\nその2: {b}')
     for i in range(len(a)):
