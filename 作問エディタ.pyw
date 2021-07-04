@@ -222,7 +222,9 @@ class Problem:
         for i in['タイトル','得点','タグ','名前','問題文','必要変数','制約','テストケース','出力','コーナー入力','コーナー出力','想定解','生成機','解説']:exec(f'self.{i}={i}')
     def 反映(self):
         self.タイトル=タイトル.get()
-        self.得点=100 if 得点.get()==''else int(得点.get())
+        if 得点.get()=='':
+            raise ValueError('得点が設定されていません')
+        self.得点=int(得点.get())
         self.タグ=タグ.get()
         self.名前=名前.get()
         self.問題文=問題文.get(0.0,'end -1c')
@@ -314,27 +316,19 @@ def 必要変数の配列():
         if a[-1]=='':raise ValueError(f'{len(a)}番目の必要な変数の名前が定義されていません')
     return a
 def テストケースから出力を得る(*e):
-    テストケース出力部.delete(0.0,'end')
-    コーナーケース出力部.delete(0.0,'end')
     jsonスペース.delete(0.0,'end')
-    jsonスペース.insert(0.0,'ランダムケースを出力します...')
-    if テストケース入力部.get(0.0,'end -1c'):
+    テストケース実行支援('ランダム',テストケース入力部,テストケース出力部)
+    jsonスペース.insert('end','\n')
+    テストケース実行支援('コーナー',コーナーケース入力部,コーナーケース出力部)
+def テストケース実行支援(name,inputs,outputs):
+    outputs.delete(0.0,'end')
+    jsonスペース.insert('end',f'{name}ケースを出力します...')
+    if inputs.get(0.0,'end -1c'):
         t=time()
         変数の個数=len(必要変数.get().split(','))
-        for m,l in enumerate(テストケース入力部.get(0.0,'end -1c').split('\n')):
-            with ErrorMessage(f'ランダムケースその{m+1}を実行中に\nエラーが発生したよ'):
-                テストケース出力部.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
-            if time()-t>0.1:
-                window.update()
-                t=time()
-    jsonスペース.insert('end','出力完了')
-    jsonスペース.insert('end','\nコーナーケースを出力します...')
-    if コーナーケース入力部.get(0.0,'end -1c'):
-        t=time()
-        変数の個数=len(必要変数.get().split(','))
-        for m,l in enumerate(コーナーケース入力部.get(0.0,'end -1c').split('\n')):
-            with ErrorMessage(f'コーナーケースその{m+1}を実行中に\nエラーが発生したよ'):
-                コーナーケース出力部.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
+        for m,l in enumerate(inputs.get(0.0,'end -1c').split('\n')):
+            with ErrorMessage(f'{name}ケースその{m+1}を実行中に\nエラーが発生したよ'):
+                outputs.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
             if time()-t>0.1:
                 window.update()
                 t=time()
