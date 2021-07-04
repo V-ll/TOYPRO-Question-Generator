@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ18.5')
+    window.title('V.ll式作問エディタβ18.6')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -222,8 +222,8 @@ class Problem:
         for i in['タイトル','得点','タグ','名前','問題文','必要変数','制約','テストケース','出力','コーナー入力','コーナー出力','想定解','生成機','解説']:exec(f'self.{i}={i}')
     def 反映(self):
         self.タイトル=タイトル.get()
-        if 得点.get()=='':
-            raise ValueError('得点が設定されていません')
+        if not 得点.get().isdecimal():
+            raise ValueError('得点が整数ではありません:'+strr(得点.get()))
         self.得点=int(得点.get())
         self.タグ=タグ.get()
         self.名前=名前.get()
@@ -264,7 +264,7 @@ class ErrorMessage:
             a=traceback.format_exc()
             while search('File .*?, ',a):a=a.replace(search('File .*?, ',a).group(),'')
             jsonスペース.delete(0.0,'end')
-            jsonスペース.insert(0.0,self.text+f'({args[0].__name__})\n\n{args[1]}\n\n{a}')
+            jsonスペース.insert(0.0,self.text+f'({args[0].__name__})\n\n{str(args[1])or"(エラーメッセージなし)"}\n\n{a}')
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 def テストケース出力支援(name,message,inputs,outputs,変数ズ):
     text=f',\n    "{name}cases":['
@@ -426,7 +426,8 @@ def 変数と入出力例反映er(*e):#コンマがあるとエラーになる�
         問題文.insert('end',text)
 def 保存するか確認するer(*e):
     global current_problem,prev
-    current_problem.反映()
+    with ErrorMessage('終了時にエラーが起こったよ'):
+        current_problem.反映()
     if prev!=current_problem:
         jsonスペース.delete(0.0,'end')
         jsonスペース.insert(0.0,'終了します...')
