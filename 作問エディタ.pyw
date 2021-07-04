@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ18.2')
+    window.title('V.ll式作問エディタβ18.3')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -343,7 +343,7 @@ def テストケースから出力を得る(*e):
                 t=time()
     jsonスペース.insert('end','出力完了')
 def いい感じマン(*e):
-    with ErrorMessage('どこかは知らないけどエラーが起こったよ'):
+    with ErrorMessage('保存時にエラーが起こったよ'):
         global current_problem
         current_problem.反映()
         flag=not os.path.exists((current_problem.タイトル or'無題')+'.json')
@@ -351,7 +351,11 @@ def いい感じマン(*e):
         if flag:
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,current_problem.output())
-            with open((current_problem.タイトル or'無題')+'.json','w',-1,'UTF-16')as f:f.write(jsonスペース.get(0.0,'end -1c'))
+            for i in['ANSI','SJIS','UTF-8','UTF-16']:
+                try:
+                    with open((current_problem.タイトル or'無題')+'.json','w',-1,i)as f:f.write(jsonスペース.get(0.0,'end -1c'));flag=0;break
+                except:pass
+            if flag:raise IOError('保存に失敗しました')
             global prev
             prev.反映()
 def 色変えるマン(*e,t=window):
