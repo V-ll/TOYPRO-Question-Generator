@@ -17,7 +17,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ18.3')
+    window.title('V.ll式作問エディタβ18.4')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -242,29 +242,10 @@ class Problem:
         text+=formatt(self.制約)+'",\n  "question":"'+formatt(self.問題文)
         text+='",\n  "test_case":{\n    "variables":{'
         if 変数ズ:text+='\n'+',\n'.join(['      "'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'\n    '
-        text+='},\n    "cases":['
-        if self.テストケース=="":cases=[];outputs=[]
-        else:
-            text+='\n'
-            cases=[eval(f'[{i}]')for i in self.テストケース.split('\n')]
-            if set(map(len,cases))!={len(変数ズ),}:
-                raise ValueError('テストケースの中に、入力の数が必要な変数の数と一致しないものがあります')
-            outputs=self.出力.split('\n')
-            if len(cases)!=len(outputs):
-                raise ValueError('ランダムケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで改善できる場合があります。')
-            text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])+'\n    '
-        text+='],\n    "corner_cases":['
-        if self.コーナー出力=="":cases=[];outputs=[]
-        else:
-            text+='\n'
-            cases=[eval(f'[{i}]')for i in self.コーナー入力.split('\n')]
-            if set(map(len,cases))!={len(変数ズ),}:
-                raise ValueError('テストケースの中に、入力の数が必要な変数の数と一致しないものがあります')
-            outputs=self.コーナー出力.split('\n')
-            if len(cases)!=len(outputs):
-                raise ValueError('ランダムケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで改善できる場合があります。')
-            text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])+'\n    '
-        text+=']\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":"'+formatt(self.生成機)+'",\n  "comment":"'+formatt(self.解説)+'"\n}'
+        text+='}'
+        text+=テストケース出力支援('','ランダム',self.テストケース,self.出力,変数ズ)
+        text+=テストケース出力支援('corner_','コーナー',self.コーナー入力,self.コーナー出力,変数ズ)
+        text+='\n  },\n  "expected_answer":"'+formatt(self.想定解)+'",\n  "test_case_generator":"'+formatt(self.生成機)+'",\n  "comment":"'+formatt(self.解説)+'"\n}'
         return text
     def __eq__(self,other):
         if type(other)!=self.__class__:return False
@@ -283,6 +264,20 @@ class ErrorMessage:
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,self.text+f'({args[0].__name__})\n\n{args[1]}\n\n{a}')
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+def テストケース出力支援(name,message,inputs,outputs,変数ズ):
+    text=f',\n    "{name}cases":['
+    if inputs=="":cases=[];outputs=[]
+    else:
+        text+='\n'
+        cases=[eval(f'[{i}]')for i in inputs.split('\n')]
+        if set(map(len,cases))!={len(変数ズ),}:
+            text=[f'テストケース{i+1}'for i in range(len(cases))if len(cases[i])!=len(変数ズ)]
+            raise ValueError(message+'ケースの中に、入力の数が必要な変数の数と\n一致しないものがあります\n'+','.join(text))
+        outputs=outputs.split('\n')
+        if len(cases)!=len(outputs):
+            raise ValueError(message+'ケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで\n改善できる場合があります。')
+        text+=',\n'.join(['      {\n        "inputs":{\n'+',\n'.join(['          "'+変数ズ[j]+'":'+strr(cases[i][j])for j in range(len(cases[i]))])+'\n        },\n        "output":"'+formatt(outputs[i])+'"\n      }'for i in range(len(outputs))])+'\n    '
+    return text+']'
 def 二つの配列ドッキング(a,b):
     if len(a)!=len(b):raise ValueError(f'次の二つは要素数が等しくありません\nその1: {a}\nその2: {b}')
     for i in range(len(a)):
@@ -313,8 +308,10 @@ def てすと(testcase,code):
 def 必要変数の配列():
     a=[]
     for i in 必要変数.get().split(','):
-        if ':'not in i:raise ValueError('必要変数の列にコロンがありません\n対応するエラーの部分-> '+i)
+        if i=='':raise ValueError(f'{len(a)+1}番目の必要な変数が定義されていません')
+        if ':'not in i:raise ValueError(f'{len(a)+1}番目の必要な変数の型が定義されていません\nA:intのようにコロンの後に型を指定してください。\n対応するエラーの部分-> '+i)
         a+=[i[:i.index(':')]]
+        if a[-1]=='':raise ValueError(f'{len(a)}番目の必要な変数の名前が定義されていません')
     return a
 def テストケースから出力を得る(*e):
     テストケース出力部.delete(0.0,'end')
@@ -344,6 +341,7 @@ def テストケースから出力を得る(*e):
     jsonスペース.insert('end','出力完了')
 def いい感じマン(*e):
     with ErrorMessage('保存時にエラーが起こったよ'):
+        必要変数の配列()
         global current_problem
         current_problem.反映()
         flag=not os.path.exists((current_problem.タイトル or'無題')+'.json')
@@ -373,10 +371,11 @@ def 開いて反映する(*e):
             jsonスペース.delete(0.0,'end')
             jsonスペース.insert(0.0,'ファイル読込中...')
             frag=1
-            for i in ['UTF-16','UTF-8','SJIS']:
+            for i in ['SJIS','UTF-16','UTF-8']:
                 try:
-                    with open(a,'r',-1,i)as f:b=eval(f.read());frag=0;break
-                except:pass
+                    jsonスペース.insert('end','\n'+i+'で読み込みます...')
+                    with open(a,'r',-1,i)as f:b=eval(f.read());frag=0;jsonスペース.insert('end','成功');break
+                except:jsonスペース.insert('end','失敗')
             if frag:raise IOError('ファイルの読み込みに失敗しました')
             current_problem=Problem(
                 b["title"],
@@ -396,13 +395,12 @@ def 開いて反映する(*e):
                 )
             問題データを反映します(data=current_problem)
             prev.反映()
-            jsonスペース.insert('end','完了')
 def テストケース求めるer():
     with time_limit_with_thread(2):
         try:
             a={}
             exec(ジェネレータコード.get(0.0,'end -1c'),{},a)
-            if False not in[i[:i.index(':')] in a for i in 必要変数.get().split(',')]:
+            if False not in[i in a for i in 必要変数の配列()]:
                 #print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
                 テストケース入力部.insert('end','\n'+','.join([strr(a[i[:i.index(':')]])for i in 必要変数.get().split(',')]))
             else:raise ValueError('変数の定義がきちんと行われていません\n定義されていない変数は'+str([i[:i.index(':')]for i in 必要変数.get().split(',') if i[:i.index(':')] not in a]))
@@ -436,6 +434,8 @@ def 保存するか確認するer(*e):
     global current_problem,prev
     current_problem.反映()
     if prev!=current_problem:
+        jsonスペース.delete(0.0,'end')
+        jsonスペース.insert(0.0,'終了します...')
         if askyesno("保存?", "このファイルは変更されています。終了前に保存しますか?"):
             いい感じマン()
             if prev==current_problem:window.destroy()
