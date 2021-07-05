@@ -1,7 +1,7 @@
 from tkinter.scrolledtext import ScrolledText
 from tkinter.messagebox import askyesno
 from tkinter.filedialog import askopenfilename
-from tkinter import Tk,Frame,Entry,LEFT,RIGHT,BOTTOM,Radiobutton,Label,Text,Button,NW,W,StringVar,BOTH,Scrollbar,HORIZONTAL,N,NONE
+from tkinter import*
 from re import search
 from random import randint
 from time import sleep,time
@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ18.8')
+    window.title('V.ll式作問エディタβ19.0')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -22,6 +22,8 @@ if True:#折り畳めるようにインデントした。
     テーマ.set('dark')
     ライトボタン.pack(side=LEFT)
     ダークボタン.pack(side=LEFT)
+    新規=Button(問題総まとめ,text='新規で問題を作成する',font=fonts)
+    新規.pack(side=LEFT)
     開く=Button(問題総まとめ,text='ファイルから読み込む',font=fonts)
     開く.pack(side=LEFT)
     名前ラベル=Label(問題総まとめ,text="アカウントのID→",font=fonts)
@@ -77,6 +79,8 @@ if True:#折り畳めるようにインデントした。
     想定解タグ.pack(anchor=W)
     想定解本文=ScrolledText(想定解の枠,font=fonts,width=43,height=27)
     想定解本文.pack(fill=BOTH)
+    想定解実行=Button(想定解の枠,text='想定解のプログラムを実行',font=fonts)
+    想定解実行.pack(fill=BOTH)
 
     #解説を書いてもらいます
     解説枠=Frame(問題行1)
@@ -159,11 +163,11 @@ if True:#折り畳めるようにインデントした。
     生成枠3.pack(fill=BOTH)
     想定解から出力を求めるボタン=Button(生成枠3,text='プログラムから出力を生成',font=fonts)
     想定解から出力を求めるボタン.pack(side=LEFT,fill=BOTH)
-    json化ボタン=Button(生成枠3,text='jsonに変換',font=fonts)
+    json化ボタン=Button(生成枠3,text='jsonを保存',font=fonts)
     json化ボタン.pack(fill=BOTH)
     jsonスペース枠=Frame(jsonの枠)
     jsonスペース枠.pack()
-    jsonタグ=Label(jsonスペース枠,text='jsonの出力↓',font=fonts)
+    jsonタグ=Label(jsonスペース枠,text='出力↓',font=fonts)
     jsonタグ.pack(anchor=W)
     jsonスペース=ScrolledText(jsonスペース枠,width=49,height=19,wrap=NONE)
     jsonスペース.pack()
@@ -253,9 +257,11 @@ class ErrorMessage:
         if args[0]is not None:
             a=traceback.format_exc()
             while search('File .*?, ',a):a=a.replace(search('File .*?, ',a).group(),'')
-            jsonスペース.delete(0.0,'end')
-            jsonスペース.insert(0.0,self.text+f'({args[0].__name__})\n\n{str(args[1])or"(エラーメッセージなし)"}\n\n{a}')
+            printt(self.text+f'({args[0].__name__})\n\n{str(args[1])or"(エラーメッセージなし)"}\n\n{a}')
 #関数定義＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+def printt(text="",delete=True):
+    if delete:jsonスペース.delete(0.0,'end')
+    jsonスペース.insert('end',text)
 def シン支援(message,inputs,outputs,変数ズ):
     if inputs=="":return[]
     else:
@@ -282,11 +288,13 @@ def てすと(testcase,code):
     #ぐろぉばる=""
     #print('caught:',testcase)
     text=code
-    for i in testcase:text=text.replace(search(i+' ?= ?',text).group(),'',1)
-    変数ズ=';'.join([i+'='+strr(testcase[i])for i in testcase])
+    変数ズ="1"
+    if testcase is not None:
+        for i in testcase:text=text.replace(search(i+' ?= ?',text).group(),'',1)
+        変数ズ=';'.join([i+'='+strr(testcase[i])for i in testcase])
     a={}
     変数名=''.join(map(lambda x:chr(randint(97,122)),range(500)))
-    with time_limit_with_thread(2):
+    with time_limit_with_thread(5):
         try:
             exec(f'def print(*value,sep=" ",end="\\n",file="",flush=""):\n global {変数名}\n {変数名}+=sep.join(map(str,value))+end\n{変数名}="";'+変数ズ+';'+text,a)
             return formatt(a[変数名][:-1])
@@ -309,7 +317,7 @@ def テストケースから出力を得る(*e):
     テストケース実行支援('コーナー',コーナーケース入力部,コーナーケース出力部)
 def テストケース実行支援(name,inputs,outputs):
     outputs.delete(0.0,'end')
-    jsonスペース.insert('end',f'{name}ケースを出力します...')
+    printt(f'{name}ケースを出力します...',False)
     if inputs.get(0.0,'end -1c'):
         t=time()
         変数の個数=len(必要変数.get().split(','))
@@ -319,7 +327,7 @@ def テストケース実行支援(name,inputs,outputs):
             if time()-t>0.1:
                 window.update()
                 t=time()
-    jsonスペース.insert('end','出力完了')
+    printt('出力完了',False)
 def いい感じマン(*e):
     with ErrorMessage('保存時にエラーが起こったよ'):
         必要変数の配列()
@@ -328,13 +336,13 @@ def いい感じマン(*e):
         flag=not os.path.exists((current_problem.タイトル or'無題')+'.json')
         if not flag:flag=askyesno("上書き保存?", "指定されたタイトルのファイルはすでに存在します。上書きしますか?")
         if flag:
-            jsonスペース.delete(0.0,'end')
-            jsonスペース.insert(0.0,current_problem.output())
+            temp=current_problem.output()
             for i in['ANSI','SJIS','UTF-8','UTF-16']:
                 try:
-                    with open((current_problem.タイトル or'無題')+'.json','w',-1,i)as f:f.write(jsonスペース.get(0.0,'end -1c'));flag=0;break
+                    with open((current_problem.タイトル or'無題')+'.json','w',-1,i)as f:f.write(temp);flag=0;break
                 except:pass
             if flag:raise IOError('保存に失敗しました')
+            printt('以下の内容で保存しました:\n'+temp)
             global prev
             prev.反映()
 def 色変えるマン(*e,t=window):
@@ -349,14 +357,13 @@ def 開いて反映する(*e):
         #print(厚切りジェイソン)
         global current_problem,prev
         with ErrorMessage('読み込み時にエラーが起こったよ'):
-            jsonスペース.delete(0.0,'end')
-            jsonスペース.insert(0.0,'ファイル読込中...')
+            printt('ファイル読込中...')
             frag=1
             for i in ['SJIS','UTF-16','UTF-8']:
                 try:
-                    jsonスペース.insert('end','\n'+i+'で読み込みます...')
-                    with open(a,'r',-1,i)as f:b=eval(f.read());frag=0;jsonスペース.insert('end','成功');break
-                except:jsonスペース.insert('end','失敗')
+                    printt('\n'+i+'で読み込みます...',False)
+                    with open(a,'r',-1,i)as f:b=eval(f.read());frag=0;printt('成功',False);break
+                except:printt('失敗',False)
             if frag:raise IOError('ファイルの読み込みに失敗しました')
             current_problem=Problem(
                 b["title"],
@@ -377,7 +384,7 @@ def 開いて反映する(*e):
             問題データを反映します(data=current_problem)
             prev.反映()
 def テストケース求めるer():
-    with time_limit_with_thread(2):
+    with time_limit_with_thread(5):
         try:
             a={}
             exec(ジェネレータコード.get(0.0,'end -1c'),{},a)
@@ -388,8 +395,7 @@ def テストケース求めるer():
         except TimeoutException as e:raise TimeoutError('ソースコード実行時間が長すぎます')
         except Exception as e:raise e
 def テストケース生成er(*e):
-    jsonスペース.delete(0.0,'end')
-    jsonスペース.insert(0.0,'作成します...')
+    printt('作成します...')
     with ErrorMessage('テストケース生成中にエラーが起こったよ'):
         if not 生成個数.get().isdecimal():raise ValueError('生成回数が整数ではありません')
         t=time()
@@ -398,7 +404,7 @@ def テストケース生成er(*e):
             if time()-t>0.1:
                 window.update()
                 t=time()
-        jsonスペース.insert('end','作成完了')
+        printt('作成完了',False)
     #print(a)
 def 変数と入出力例反映er(*e):#コンマがあるとエラーになるんだったよね。入力例と出力例どっちも改造する必要がありそうだ。
     with ErrorMessage('文章生成中にエラーが起こったよ'):
@@ -416,22 +422,63 @@ def 保存するか確認するer(*e):
     with ErrorMessage('終了時にエラーが起こったよ'):
         current_problem.反映()
     if prev!=current_problem:
-        jsonスペース.delete(0.0,'end')
-        jsonスペース.insert(0.0,'終了します...')
+        printt('終了します...')
         if askyesno("保存?", "このファイルは変更されています。終了前に保存しますか?"):
             いい感じマン()
             if prev==current_problem:window.destroy()
         else:window.destroy()
     else:window.destroy()
+def 想定解実行er(*e):
+    "単体で実行したいというニーズを叶えます"
+    printt('想定解を実行します...')
+    with ErrorMessage('想定解プログラムを実行中にエラーが起こったよ'):
+        printt('完了\n'+てすと(None,想定解本文.get(0.0,'end')),False)
+def 作業効率さん1(*e):
+    テストケースから出力を得る()
+    変数と入出力例反映er()
+def 新規問題(*e):
+    global current_problem,prev
+    with ErrorMessage('問題データ処理中にエラーが起こったよ'):current_problem.反映()
+    if prev!=current_problem:
+        printt('新規問題を作成します...')
+        if askyesno("保存?", "このファイルは変更されています。\n問題新規作成前に保存しますか?"):
+            いい感じマン()
+            if prev!=current_problem:return
+    問題データを反映します(data=Problem('',100,'','','','','','','','','','','',''))
+    prev.反映()
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 想定解から出力を求めるボタン["command"]=テストケースから出力を得る
 json化ボタン["command"]=いい感じマン
 ライトボタン["command"]=ダークボタン["command"]=色変えるマン
+新規["command"]=新規問題
 開く["command"]=開いて反映する
 生成ボタン["command"]=テストケース生成er
 色々反映ボタン["command"]=変数と入出力例反映er
+想定解実行["command"]=想定解実行er
 window.bind('<Control-s>',いい感じマン)
+window.bind('<F5>',作業効率さん1)
+window.bind('<Control-n>',新規問題)
+window.bind('<Control-o>',開いて反映する)
+window.bind('<Control-p>',想定解実行er)
+window.bind('<Control-q>',保存するか確認するer)
+window.bind('<Control-r>',テストケース生成er)
+window.bind('<Control-t>',テストケースから出力を得る)
 window.protocol('WM_DELETE_WINDOW',保存するか確認するer)
+#＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+menus=[Menu(window,tearoff=0)for i in range(4)]
+window.config(menu=menus[0])
+for i,j in 二つの配列ドッキング(['ファイル','テーマ','処理'],menus[1:]):
+    menus[0].add_cascade(label=i, menu=j)
+menus[1].add_command(label='新規',command=新規問題,accelerator='Ctrl+N')
+menus[1].add_command(label='開く',command=開いて反映する,accelerator='Ctrl+O')
+menus[1].add_command(label='保存',command=いい感じマン,accelerator='Ctrl+S')
+menus[1].add_command(label='終了',command=保存するか確認するer,accelerator='Ctrl+Q')
+menus[2].add_radiobutton(label='ライトモード',variable=テーマ,value='light',command=色変えるマン)
+menus[2].add_radiobutton(label='ダークモード',variable=テーマ,value='dark',command=色変えるマン)
+menus[3].add_command(label='想定解の実行',command=想定解実行er,accelerator='Ctrl+P')
+menus[3].add_command(label='ランダムケース生成',command=テストケース生成er,accelerator='Ctrl+R')
+menus[3].add_command(label='想定解から出力生成',command=テストケースから出力を得る,accelerator='Ctrl+T')
+menus[3].add_command(label='制約など反映',command=作業効率さん1,accelerator='F5')
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 current_problem=Problem()
 prev=Problem()
