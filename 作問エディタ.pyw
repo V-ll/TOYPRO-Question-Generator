@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.0')
+    window.title('V.ll式作問エディタβ19.1')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -337,7 +337,7 @@ def いい感じマン(*e):
         if not flag:flag=askyesno("上書き保存?", "指定されたタイトルのファイルはすでに存在します。上書きしますか?")
         if flag:
             temp=current_problem.output()
-            for i in['ANSI','SJIS','UTF-8','UTF-16']:
+            for i in['UTF-8','UTF-16']:
                 try:
                     with open((current_problem.タイトル or'無題')+'.json','w',-1,i)as f:f.write(temp);flag=0;break
                 except:pass
