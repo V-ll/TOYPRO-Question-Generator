@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.1')
+    window.title('V.ll式作問エディタβ19.2')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -29,7 +29,10 @@ if True:#折り畳めるようにインデントした。
     名前ラベル=Label(問題総まとめ,text="アカウントのID→",font=fonts)
     名前ラベル.pack(side=LEFT)
     名前=Entry(問題総まとめ,font=fonts)
-    名前.pack()
+    名前.pack(side=LEFT)
+    圧縮します=BooleanVar()
+    圧縮しますか=Checkbutton(問題総まとめ,variable=圧縮します,text='通常版を保存します(推奨)',font=fonts)
+    圧縮しますか.pack()
     #print(テーマ.get())
     問題行1=Frame(window)
     問題行1.pack()
@@ -64,8 +67,13 @@ if True:#折り畳めるようにインデントした。
     変数司令.pack(anchor=W)
     必要変数=Entry(問題管理,font=fonts)
     必要変数.pack(fill=BOTH,expand=1)
-    制約ラベル=Label(問題管理,text='満たすべき制約↓(python書式)',font=fonts)
-    制約ラベル.pack(anchor=W)
+    問題ヘッダ4=Frame(問題管理)
+    問題ヘッダ4.pack(anchor=W)
+    制約ラベル=Label(問題ヘッダ4,text='満たすべき制約↓(python書式)',font=fonts)
+    制約ラベル.pack(side=LEFT)
+    制約実行可否=BooleanVar()
+    制約チェック=Checkbutton(問題ヘッダ4,variable=制約実行可否,text='クリックで制約判定をONに(今はOFF)',font=fonts)
+    制約チェック.pack()
     制約=Entry(問題管理,width=60,font=fonts)
     制約.pack(fill=BOTH)
     制約xすくろぉる=Scrollbar(問題管理,orient=HORIZONTAL,command=制約.xview)
@@ -238,12 +246,13 @@ class Problem:
         self.解説=解説文.get(0.0,'end -1c')
     def output(self):
         変数ズ=[]if self.必要変数==""else[i[:i.index(':')]for i in self.必要変数.split(',')]
-        return json.dumps(
-            {'title':self.タイトル,'rating':self.得点,'tag':self.タグ,'restrict':self.制約,'question':self.問題文,
-                'test_case':{
-                    'variables':eval('{'+','.join(['"'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'}'),
-                    'cases':シン支援('ランダム',self.テストケース,self.出力,変数ズ),'corner_cases':シン支援('コーナー',self.コーナー入力,self.コーナー出力,変数ズ)},
-                'expected_answer':self.想定解,'test_case_generator':self.生成機,'comment':self.解説},indent=2,ensure_ascii=False)
+        temp={'title':self.タイトル,'rating':self.得点,'tag':self.タグ,'restrict':self.制約,'question':self.問題文,
+            'test_case':{
+                'variables':eval('{'+','.join(['"'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'}'),
+                'cases':シン支援('ランダム',self.テストケース,self.出力,変数ズ),'corner_cases':シン支援('コーナー',self.コーナー入力,self.コーナー出力,変数ズ)},
+            'expected_answer':self.想定解,'test_case_generator':self.生成機,'comment':self.解説}
+        if 圧縮します.get():return json.dumps(temp,separators=(',',':'),ensure_ascii=False)
+        else:return json.dumps(temp,indent=2,ensure_ascii=False)
     def __eq__(self,other):
         if type(other)!=self.__class__:return False
         for i in [j for j in dir(other)if j[0]!='_' and j not in['反映','output']]:
@@ -323,7 +332,17 @@ def テストケース実行支援(name,inputs,outputs):
         変数の個数=len(必要変数.get().split(','))
         for m,l in enumerate(inputs.get(0.0,'end -1c').split('\n')):
             with ErrorMessage(f'{name}ケースその{m+1}を実行中に\nエラーが発生したよ'):
-                outputs.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
+                a={}
+                exec(';'.join([f'{i}={j}'for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))]),{},a)
+                if False not in[i in a for i in 必要変数の配列()]:
+                    if 制約実行可否.get():
+                        try:
+                            b=eval(制約.get(),{},a)
+                        except Exception as e:
+                            raise e.__class__('制約判定中にエラーが起こったよ')
+                    outputs.insert('end','\n'*(m>0)+てすと({i:j for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))},想定解本文.get(0.0,'end')))
+                    if 制約実行可否.get():
+                        if not b:raise ValueError(f'{name}ケースその{m+1}の入力が\n制約を満たしていません\nケースの入力自体か\n制約を変更することで解決できることがあります')
             if time()-t>0.1:
                 window.update()
                 t=time()
@@ -349,7 +368,9 @@ def 色変えるマン(*e,t=window):
     #print(t)
     if t.children!={}:
         for i in t.children:色変えるマン(t=t.children[i])
-    try:t['bg']=("#eeeeee"if type(t)not  in[Entry,ScrolledText] else"#ffffff")if テーマ.get()=='light'else("#333333"if type(t)in[Entry,ScrolledText] else"#444444");t['fg']="#000000"if テーマ.get()=='light'else"#eeeeee"
+    try:
+        t['bg']=("#eeeeee"if type(t)not  in[Entry,ScrolledText] else"#ffffff")if テーマ.get()=='light'else("#222222"if type(t)in[Entry,ScrolledText] else"#333333")
+        t['fg']="#000000"if テーマ.get()=='light'else"#eeeeee"
     except:pass
 def 開いて反映する(*e):
     a=askopenfilename(filetypes=[("jsonファイル","*.json")],initialdir=os.path.abspath(os.path.dirname(__file__)))
@@ -390,7 +411,14 @@ def テストケース求めるer():
             exec(ジェネレータコード.get(0.0,'end -1c'),{},a)
             if False not in[i in a for i in 必要変数の配列()]:
                 #print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
+                if 制約実行可否.get():
+                    try:
+                        b=eval(制約.get(),{},a)
+                    except Exception as e:
+                        raise e.__class__('制約判定中にエラーが起こったよ\n変数は全部揃っています')
                 テストケース入力部.insert('end','\n'+','.join([strr(a[i[:i.index(':')]])for i in 必要変数.get().split(',')]))
+                if 制約実行可否.get():
+                    if not b:raise ValueError('最後に出力されたランダムケースが\n制約を満たしていません\nランダムケース生成コードか\n制約を変更することで解決できることがあります')
             else:raise ValueError('変数の定義がきちんと行われていません\n定義されていない変数は'+str([i[:i.index(':')]for i in 必要変数.get().split(',') if i[:i.index(':')] not in a]))
         except TimeoutException as e:raise TimeoutError('ソースコード実行時間が長すぎます')
         except Exception as e:raise e
@@ -446,6 +474,14 @@ def 新規問題(*e):
             if prev!=current_problem:return
     問題データを反映します(data=Problem('',100,'','','','','','','','','','','',''))
     prev.反映()
+def 制約チェック文字変えer(*e):
+    global 制約チェック
+    制約チェック['text']='クリックで制約判定を'+'OOFNF'[1-制約実行可否.get()::2]+'に(今は'+'OOFNF'[制約実行可否.get()::2]+')'
+def 圧縮するか文字変えer(*e):
+    global 圧縮しますか
+    if 圧縮します.get():
+        圧縮しますか['text']='縮小版を保存します(非推奨)'
+    else:圧縮しますか['text']='通常版を保存します(推奨)'
 #＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 想定解から出力を求めるボタン["command"]=テストケースから出力を得る
 json化ボタン["command"]=いい感じマン
@@ -455,6 +491,8 @@ json化ボタン["command"]=いい感じマン
 生成ボタン["command"]=テストケース生成er
 色々反映ボタン["command"]=変数と入出力例反映er
 想定解実行["command"]=想定解実行er
+制約チェック["command"]=制約チェック文字変えer
+圧縮しますか["command"]=圧縮するか文字変えer
 window.bind('<Control-s>',いい感じマン)
 window.bind('<F5>',作業効率さん1)
 window.bind('<Control-n>',新規問題)
