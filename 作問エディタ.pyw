@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.2')
+    window.title('V.ll式作問エディタβ19.3')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -246,7 +246,7 @@ class Problem:
         self.解説=解説文.get(0.0,'end -1c')
     def output(self):
         変数ズ=[]if self.必要変数==""else[i[:i.index(':')]for i in self.必要変数.split(',')]
-        temp={'title':self.タイトル,'rating':self.得点,'tag':self.タグ,'restrict':self.制約,'question':self.問題文,
+        temp={'title':self.タイトル,'rating':self.得点,'user_id':self.名前,'tag':self.タグ,'restrict':self.制約,'question':self.問題文,
             'test_case':{
                 'variables':eval('{'+','.join(['"'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'}'),
                 'cases':シン支援('ランダム',self.テストケース,self.出力,変数ズ),'corner_cases':シン支援('コーナー',self.コーナー入力,self.コーナー出力,変数ズ)},
