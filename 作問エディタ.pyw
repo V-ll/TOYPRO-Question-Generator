@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.3')
+    window.title('V.ll式作問エディタβ19.4')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -333,7 +333,7 @@ def テストケース実行支援(name,inputs,outputs):
         for m,l in enumerate(inputs.get(0.0,'end -1c').split('\n')):
             with ErrorMessage(f'{name}ケースその{m+1}を実行中に\nエラーが発生したよ'):
                 a={}
-                exec(';'.join([f'{i}={j}'for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))]),{},a)
+                exec(';'.join([f'{i}={strr(j)}'for i,j in 二つの配列ドッキング(必要変数の配列(),eval(f'[{l}]'))]),{},a)
                 if False not in[i in a for i in 必要変数の配列()]:
                     if 制約実行可否.get():
                         try:
