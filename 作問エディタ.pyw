@@ -1,5 +1,5 @@
 from tkinter.scrolledtext import ScrolledText
-from tkinter.messagebox import askyesno
+from tkinter.messagebox import *
 from tkinter.filedialog import askopenfilename
 from tkinter import*
 from re import search
@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.5')
+    window.title('V.ll式作問エディタβ19.6')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -244,14 +244,14 @@ class Problem:
         self.想定解=想定解本文.get(0.0,'end -1c')
         self.生成機=ジェネレータコード.get(0.0,'end -1c')
         self.解説=解説文.get(0.0,'end -1c')
-    def output(self):
+    def output(self,圧縮する=False):
         変数ズ=[]if self.必要変数==""else[i[:i.index(':')]for i in self.必要変数.split(',')]
         temp={'title':self.タイトル,'rating':self.得点,'user_id':self.名前,'tag':self.タグ,'restrict':self.制約,'question':self.問題文,
             'test_case':{
                 'variables':eval('{'+','.join(['"'+i.replace(':','":"')+'"'for i in self.必要変数.split(',')])+'}'),
                 'cases':シン支援('ランダム',self.テストケース,self.出力,変数ズ),'corner_cases':シン支援('コーナー',self.コーナー入力,self.コーナー出力,変数ズ)},
             'expected_answer':self.想定解,'test_case_generator':self.生成機,'comment':self.解説}
-        if 圧縮します.get():return json.dumps(temp,separators=(',',':'),ensure_ascii=False)
+        if 圧縮する:return json.dumps(temp,separators=(',',':'),ensure_ascii=False)
         else:return json.dumps(temp,indent=2,ensure_ascii=False)
     def __eq__(self,other):
         if type(other)!=self.__class__:return False
@@ -352,16 +352,21 @@ def いい感じマン(*e):
         必要変数の配列()
         global current_problem
         current_problem.反映()
-        flag=not os.path.exists((current_problem.タイトル or'無題')+'.json')
+        path=(current_problem.タイトル or'無題')+'.json'
+        flag=not os.path.exists(path)
         if not flag:flag=askyesno("上書き保存?", "指定されたタイトルのファイルはすでに存在します。上書きしますか?")
         if flag:
-            temp=current_problem.output()
+            temp=current_problem.output(圧縮します.get())
             for i in['UTF-8','UTF-16']:
                 try:
-                    with open((current_problem.タイトル or'無題')+'.json','w',-1,i)as f:f.write(temp);flag=0;break
+                    with open(path,'w',-1,i)as f:f.write(temp);flag=0;break
                 except:pass
-            if flag:raise IOError('保存に失敗しました')
-            printt('以下の内容で保存しました:\n'+temp)
+            if flag:raise IOError('保存に失敗しました。\n特殊な文字が含まれている可能性があります。')
+            if os.path.getsize(path)>2**16:
+                temp=current_problem.output(True)
+                with open(path,'w',-1,i)as f:f.write(temp)
+            printt(f'以下の内容で保存しました({round(os.path.getsize(path)/1024,2)}KB):\n'+temp)
+            if os.path.getsize(path)>2**16:showinfo('ファイルサイズ過大','ファイルサイズが64KBを超えており、\nトイプロにアップロードできない可能性があります。\nテストケースの削減などで改善できる場合があります。')
             global prev
             prev.反映()
 def 色変えるマン(*e,t=window):
