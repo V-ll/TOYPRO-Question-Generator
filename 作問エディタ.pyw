@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.6')
+    window.title('V.ll式作問エディタβ19.7')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -30,9 +30,9 @@ if True:#折り畳めるようにインデントした。
     名前ラベル.pack(side=LEFT)
     名前=Entry(問題総まとめ,font=fonts)
     名前.pack(side=LEFT)
-    圧縮します=BooleanVar()
-    圧縮しますか=Checkbutton(問題総まとめ,variable=圧縮します,text='通常版を保存します(推奨)',font=fonts)
-    圧縮しますか.pack()
+    #圧縮します=BooleanVar()
+    #圧縮しますか=Checkbutton(問題総まとめ,variable=圧縮します,text='通常版を保存します(推奨)',font=fonts)
+    #圧縮しますか.pack()#もはや不要となった
     #print(テーマ.get())
     問題行1=Frame(window)
     問題行1.pack()
@@ -356,7 +356,7 @@ def いい感じマン(*e):
         flag=not os.path.exists(path)
         if not flag:flag=askyesno("上書き保存?", "指定されたタイトルのファイルはすでに存在します。上書きしますか?")
         if flag:
-            temp=current_problem.output(圧縮します.get())
+            temp=current_problem.output()#(圧縮します.get())
             for i in['UTF-8','UTF-16']:
                 try:
                     with open(path,'w',-1,i)as f:f.write(temp);flag=0;break
@@ -497,7 +497,7 @@ json化ボタン["command"]=いい感じマン
 色々反映ボタン["command"]=変数と入出力例反映er
 想定解実行["command"]=想定解実行er
 制約チェック["command"]=制約チェック文字変えer
-圧縮しますか["command"]=圧縮するか文字変えer
+#圧縮しますか["command"]=圧縮するか文字変えer
 window.bind('<Control-s>',いい感じマン)
 window.bind('<F5>',作業効率さん1)
 window.bind('<Control-n>',新規問題)
