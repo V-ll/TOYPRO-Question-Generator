@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.7')
+    window.title('V.ll式作問エディタβ19.8')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -281,7 +281,7 @@ def シン支援(message,inputs,outputs,変数ズ):
         outputs=outputs.split('\n')
         if len(cases)!=len(outputs):
             raise ValueError(message+'ケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで\n改善できる場合があります。')
-        return [{'inputs':{変数ズ[j]:cases[i][j]for j in range(len(cases[i]))},'output':outputs[i]}for i in range(len(outputs))]
+        return [{'inputs':{変数ズ[j]:cases[i][j]for j in range(len(cases[i]))},'output':outputs[i].encode("utf-8").decode("unicode-escape")}for i in range(len(outputs))]
 def 二つの配列ドッキング(a,b):
     if len(a)!=len(b):raise ValueError(f'次の二つは要素数が等しくありません\nその1: {a}\nその2: {b}')
     for i in range(len(a)):
