@@ -12,7 +12,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.9')
+    window.title('V.ll式作問エディタβ19.10')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -279,6 +279,15 @@ def シン支援(message,inputs,outputs,変数ズ):
             text=[f'テストケース{i+1}'for i in range(len(cases))if len(cases[i])!=len(変数ズ)]
             raise ValueError(message+'ケースの中に、入力の数が必要な変数の数と\n一致しないものがあります\n'+','.join(text))
         outputs=outputs.split('\n')
+        for j in range(len(outputs)):
+            a=[]
+            i=0
+            while '\\n'in outputs[j][i:]:
+                i=outputs[j].index('\\n',i)+1
+                a+=[i-1]
+            for i in a[::-1]:
+                if outputs[j][i-1:i+2]!='\\\\n':
+                    outputs[j]=outputs[j][:i-1]+'\n'+outputs[j][i+2:]
         if len(cases)!=len(outputs):
             raise ValueError(message+'ケースの入力と出力の数が一致しません。\n｢プログラムから出力を生成｣ボタンで\n改善できる場合があります。')
         return [{'inputs':{変数ズ[j]:cases[i][j]for j in range(len(cases[i]))},'output':outputs[i]}for i in range(len(outputs))]
