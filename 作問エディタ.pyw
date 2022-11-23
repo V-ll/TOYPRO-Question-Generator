@@ -6,13 +6,14 @@ from re import search
 from random import randint
 from time import sleep,time
 import traceback,errno,contextlib,ctypes,threading,os,json
+from sys import argv
 strr=lambda x:f'"{x}"'if type(x)==str else str(x)
 formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 #GUI部品作成ここから＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.10')
+    window.title('V.ll式作問エディタβ19.11')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -386,8 +387,7 @@ def 色変えるマン(*e,t=window):
         t['bg']=("#eeeeee"if type(t)not  in[Entry,ScrolledText] else"#ffffff")if テーマ.get()=='light'else("#222222"if type(t)in[Entry,ScrolledText] else"#333333")
         t['fg']="#000000"if テーマ.get()=='light'else"#eeeeee"
     except:pass
-def 開いて反映する(*e):
-    a=askopenfilename(filetypes=[("jsonファイル","*.json")],initialdir=os.path.abspath(os.path.dirname(__file__)))
+def 開いて反映sub(a):
     if a:
         #print(厚切りジェイソン)
         global current_problem,prev
@@ -418,6 +418,8 @@ def 開いて反映する(*e):
                 )
             問題データを反映します(data=current_problem)
             prev.反映()
+def 開いて反映する(*e):
+    開いて反映sub(askopenfilename(filetypes=[("jsonファイル","*.json")],initialdir=os.path.abspath(os.path.dirname(__file__))))
 def テストケース求めるer():
     with time_limit_with_thread(5):
         try:
@@ -535,6 +537,8 @@ menus[3].add_command(label='制約など反映',command=作業効率さん1,acce
 current_problem=Problem()
 prev=Problem()
 問題データを反映します()
+if len(argv)>1 and argv[1].endswith('.json'):
+    開いて反映sub(argv[1])
 色変えるマン()
 #window.update()
 window.resizable(width=0,height=0)
