@@ -13,7 +13,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.11')
+    window.title('V.ll式作問エディタβ19.12')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -424,7 +424,7 @@ def テストケース求めるer():
     with time_limit_with_thread(5):
         try:
             a={}
-            exec(ジェネレータコード.get(0.0,'end -1c'),{},a)
+            exec(ジェネレータコード.get(0.0,'end -1c'),a,a)
             if False not in[i in a for i in 必要変数の配列()]:
                 #print([a[i[:i.index(':')]]for i in 必要変数.get().split(',')])
                 if 制約実行可否.get():
