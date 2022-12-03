@@ -13,7 +13,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.12')
+    window.title('V.ll式作問エディタβ19.14')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -223,9 +223,9 @@ class Problem:
         出力="8\n9",
         コーナー入力="1,1",
         コーナー出力="1",
-        想定解="A=B=1\nprint(A**B)",
+        想定解="# AのB乗はA**Bです。\n# それをprintするだけ!\nA=B=1\nprint(A**B)",
         生成機="from random import randint\nA=randint(1,1000)\nB=randint(1,1000)",
-        解説="AのB乗はA**Bです。\nそれをprintするだけ!"
+        解説="更新:TOYPROでは解説欄は基本的に見れません。\n想定解にコメントとして書くことをおすすめします。"
         ):
         for i in['タイトル','得点','タグ','名前','問題文','必要変数','制約','テストケース','出力','コーナー入力','コーナー出力','想定解','生成機','解説']:exec(f'self.{i}={i}')
     def 反映(self):
@@ -307,6 +307,10 @@ def てすと(testcase,code):
     #ぐろぉばる=""
     #print('caught:',testcase)
     text=code
+    while search('#.*(?=\n)',text):
+        text=text.replace(search('#.*(?=\n)',text).group(),'')
+    if search('#.*$',text):
+        text=text.replace(search('#.*$',text).group(),'')
     変数ズ="1"
     if testcase is not None:
         for i in testcase:
