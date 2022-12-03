@@ -309,7 +309,10 @@ def てすと(testcase,code):
     text=code
     変数ズ="1"
     if testcase is not None:
-        for i in testcase:text=text.replace(search(i+' ?= ?',text).group(),'',1)
+        for i in testcase:
+            if search(i+' ?= ?',text)is None:
+                raise ValueError(f'変数{i}が想定解に定義されておらず、代入できません')
+            text=text.replace(search(i+' ?= ?',text).group(),'',1)
         変数ズ=';'.join([i+'='+strr(testcase[i])for i in testcase])
     a={}
     変数名=''.join(map(lambda x:chr(randint(97,122)),range(500)))
