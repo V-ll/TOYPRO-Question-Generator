@@ -13,7 +13,7 @@ formatt=lambda x:x.replace('\n','\\n').replace('"','\\"')
 if True:#折り畳めるようにインデントした。
     fonts=('',12)
     window=Tk()
-    window.title('V.ll式作問エディタβ19.14')
+    window.title('V.ll式作問エディタβ19.15')
     #問題総まとめ
     問題総まとめ=Frame(window)
     問題総まとめ.pack(anchor=NW)
@@ -322,12 +322,15 @@ def てすと(testcase,code):
     変数名=''.join(map(lambda x:chr(randint(97,122)),range(500)))
     with time_limit_with_thread(5):
         try:
-            exec(f'def print(*value,sep=" ",end="\\n",file="",flush=""):\n global {変数名}\n {変数名}+=sep.join(map(str,value))+end\n{変数名}="";'+変数ズ+'\n'+text,a)
+            exec(f'def exit(*_):raise Exception("{変数名}")\ndef print(*value,sep=" ",end="\\n",file="",flush=""):\n global {変数名}\n {変数名}+=sep.join(map(str,value))+end\n{変数名}="";'+変数ズ+'\n'+text,a)
             return formatt(a[変数名][:-1])
         except TimeoutException:
             raise TimeoutError('コード実行時間が長すぎます')
         except Exception as e:
-            raise e
+            if str(e)==変数名:#exit関数が呼ばれました
+                return formatt(a[変数名][:-1])#通常通り
+            else:
+                raise e
 def 必要変数の配列():
     a=[]
     for i in 必要変数.get().split(','):
